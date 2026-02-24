@@ -1,6 +1,5 @@
 # Project Context — Design Project Profitability Analytics System
 
-> Paste this at the start of every development session.
 > This file is the fast-read primer. For full Django model code see DATA_MODEL.md. For workflow patterns see DEVELOPMENT.md.
 
 ---
