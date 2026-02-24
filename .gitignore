@@ -1,0 +1,23 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Django — secrets and generated files
+backend/.env
+backend/media/
+backend/staticfiles/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
