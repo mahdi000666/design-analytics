@@ -131,7 +131,7 @@ Tick items off as you complete them. Each item maps to a user story in the sprin
 - [ ] **US-23** React project message board — all roles on a project can send and view messages
 - [ ] **US-24** Analytics endpoint: budget vs actual hours per project
 - [ ] **US-24** React: Budget vs Actual bar chart (Recharts `BarChart`)
-- [ ] **US-25** Analytics endpoint: EHR per project (`budget_currency / SUM(hours_spent)`)
+- [ ] **US-25** Analytics endpoint: EHR per project (`budget_amount / SUM(hours_spent)`)
 - [ ] **US-25** EHR displayed per project on the manager dashboard
 - [ ] **US-26** Analytics endpoint: client profitability ranking (revenue, total hours, revision count)
 - [ ] **US-26** React: client profitability ranking table
@@ -240,7 +240,7 @@ class ProjectWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ['client', 'project_name', 'description', 'budget_hours',
-                  'budget_currency', 'deadline', 'status', 'category']
+                  'budget_amount', 'deadline', 'status', 'category']
 ```
 
 ### ViewSet pattern
@@ -321,7 +321,7 @@ export interface Project {
   project_name: string;
   description: string;
   budget_hours: number | null;
-  budget_currency: number | null;
+  budget_amount: number | null;
   deadline: string | null;             // ISO date string
   status: 'Active' | 'Completed' | 'OnHold';
   category: string;
@@ -332,7 +332,7 @@ export interface CreateProjectPayload {
   project_name: string;
   description?: string;
   budget_hours?: number;
-  budget_currency?: number;
+  budget_amount?: number;
   deadline?: string;
   status?: Project['status'];
   category?: string;

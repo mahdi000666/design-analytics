@@ -1,7 +1,5 @@
 from django.db import models
 from apps.projects.models import Project
-from apps.users.models import Client
-
 
 class Feedback(models.Model):
     CATEGORY_CHOICES = [
@@ -15,7 +13,6 @@ class Feedback(models.Model):
         ('Resolved', 'Resolved'),
     ]
     project      = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='feedback')
-    client       = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='feedback')
     category     = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
     content_text = models.TextField()
     status       = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')

@@ -95,7 +95,7 @@ design-analytics/
 
 **InvitationToken** — `token_id`, `user_id`, `token` varchar(255) unique, `expires_at`, `is_used` bool
 
-**Project** — `project_id`, `client_id` FK→Client, `project_name`, `description`, `budget_hours` decimal, `budget_currency` decimal, `deadline` date, `status` ENUM('Active','Completed','OnHold'), `category` varchar, `created_at`, `updated_at`
+**Project** — `project_id`, `client_id` FK→Client, `project_name`, `description`, `budget_hours` decimal, `budget_amount` decimal, `deadline` date, `status` ENUM('Active','Completed','OnHold'), `category` varchar, `created_at`, `updated_at`
 
 **ProjectAssignment** *(Project ↔ Designer M2M)* — `assignment_id`, `project_id`, `designer_id`, `assigned_at`
 
@@ -103,11 +103,11 @@ design-analytics/
 
 **TimeLog** — `log_id`, `task_id`, `designer_id` FK→Designer, `hours_spent` decimal, `description`, `created_at`
 
-**Feedback** — `feedback_id`, `project_id`, `client_id` FK→Client, `category` ENUM('Revision','Approval','Question'), `content_text` text, `status` ENUM('Pending','InProgress','Resolved'), `submitted_at`, `resolved_at` (nullable)
+**Feedback** — `feedback_id`, `project_id`, `category` ENUM('Revision','Approval','Question'), `content_text` text, `status` ENUM('Pending','InProgress','Resolved'), `submitted_at`, `resolved_at` (nullable)
 
 **Message** — `message_id`, `project_id`, `sender_id` FK→User, `content_text`, `is_read` bool, `created_at`
 
-**FileUpload** — `file_id`, `project_id`, `uploaded_by` FK→User, `file_type` varchar(20), `file_name`, `file_path`, `file_size` int, `uploaded_at`
+**FileUpload** — `file_id`, `project_id`, `uploaded_by` FK→User, `file_type` ENUM('Deliverable','Reference','Brand_Guideline'), `file_name`, `file_path`, `file_size` int, `uploaded_at`
 
 > ⚠️ There is **no Revision model**. Revisions are `Feedback` records with `category='Revision'`.
 
@@ -220,7 +220,7 @@ All computed server-side via PostgreSQL aggregations. No stored calculated field
 
 | Metric | Formula |
 |--------|---------|
-| Effective Hourly Rate (EHR) | `budget_currency / SUM(hours_spent)` |
+| Effective Hourly Rate (EHR) | `budget_amount / SUM(hours_spent)` |
 | Budget Utilisation % | `SUM(hours_spent) / budget_hours * 100` |
 | Estimation Variance % | `(SUM(actual) - SUM(estimated)) / SUM(estimated) * 100` |
 | Scope Creep Index | `COUNT(is_unplanned=True) / COUNT(*) * 100` per project |
@@ -261,5 +261,5 @@ All computed server-side via PostgreSQL aggregations. No stored calculated field
 - **Designer and Client are profile tables** — separate from User, 1:1 via `user_id UNIQUE`; all auth goes through User
 - **`analytics` app has no models** — only views running aggregate queries across other apps
 - **No public signup** — all users created by Manager via Django Admin; invitation email is the only entry point
-- **`budget_currency` stores the monetary amount** (e.g. `2000.00` for $2,000)
+- **`budget_amount` stores the monetary amount** (e.g. `2000.00` for $2,000)
 - **Files stored in `MEDIA_ROOT/projects/{project_id}/`** — on Render, use Cloudinary or S3 since Render's disk is ephemeral

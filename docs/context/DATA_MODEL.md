@@ -132,7 +132,7 @@ class Project(models.Model):
     project_name    = models.CharField(max_length=100)
     description     = models.TextField(blank=True)
     budget_hours    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    budget_currency = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    budget_amount   = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     deadline        = models.DateField(null=True, blank=True)
     status          = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Active')
     category        = models.CharField(max_length=100, blank=True)
@@ -163,7 +163,7 @@ class ProjectAssignment(models.Model):
 
 **Key rules:**
 - `on_delete=PROTECT` on `client` FK — cannot delete a Client who owns projects
-- `budget_currency / budget_hours` gives the target hourly rate
+- `budget_amount / budget_hours` gives the target hourly rate
 - `unique_together` prevents assigning the same designer to a project twice
 
 ---
@@ -235,7 +235,7 @@ class TimeLog(models.Model):
 **Key rules:**
 - Source of truth for all time-based analytics
 - `SUM(hours_spent)` per project vs `Project.budget_hours` = budget variance
-- `Project.budget_currency / SUM(hours_spent)` = Effective Hourly Rate
+- `Project.budget_amount / SUM(hours_spent)` = Effective Hourly Rate
 
 ---
 
@@ -259,7 +259,6 @@ class Feedback(models.Model):
         ('Resolved', 'Resolved'),
     ]
     project      = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='feedback')
-    client       = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='feedback')
     category     = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
     content_text = models.TextField()
     status       = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
@@ -291,11 +290,11 @@ from apps.users.models import User
 
 
 class Message(models.Model):
-    project    = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='messages')
-    sender     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    content    = models.TextField()
-    is_read    = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    project         = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='messages')
+    sender          = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    content_text    = models.TextField()
+    is_read         = models.BooleanField(default=False)
+    created_at      = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [models.Index(fields=['project', 'created_at'])]
@@ -313,9 +312,14 @@ from apps.users.models import User
 
 
 class FileUpload(models.Model):
+    FILE_TYPE_CHOICES = [
+    ('deliverable', 'Deliverable'),
+    ('reference', 'Reference'),
+    ('brand_guideline', 'Brand Guideline'),
+    ]
     project     = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='files')
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploaded_files')
-    file_type   = models.CharField(max_length=20)     # 'deliverable' | 'reference' | 'brand_guideline'
+    file_type   = models.CharField(max_length=20, choices=FILE_TYPE_CHOICES)
     file_name   = models.CharField(max_length=255)
     file_path   = models.CharField(max_length=500)    # Path within MEDIA_ROOT
     file_size   = models.IntegerField()                # Bytes
@@ -346,7 +350,7 @@ from apps.users.models import Designer, Client
 Project.objects.annotate(
     actual_hours=Sum('tasks__time_logs__hours_spent'),
     ehr=ExpressionWrapper(
-        F('budget_currency') / Sum('tasks__time_logs__hours_spent'),
+        F('budget_amount') / Sum('tasks__time_logs__hours_spent'),
         output_field=DecimalField()
     )
 ).filter(actual_hours__gt=0)
@@ -366,7 +370,7 @@ Task.objects.filter(project=project).aggregate(
 
 # Client profitability ranking
 Client.objects.annotate(
-    total_revenue=Sum('projects__budget_currency'),
+    total_revenue=Sum('projects__budget_amount'),
     total_hours=Sum('projects__tasks__time_logs__hours_spent'),
     revision_count=Count('feedback', filter=Q(feedback__category='Revision')),
 ).order_by('-total_revenue')

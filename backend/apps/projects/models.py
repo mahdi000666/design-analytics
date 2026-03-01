@@ -12,7 +12,7 @@ class Project(models.Model):
     project_name    = models.CharField(max_length=100)
     description     = models.TextField(blank=True)
     budget_hours    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    budget_currency = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    budget_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     deadline        = models.DateField(null=True, blank=True)
     status          = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Active')
     category        = models.CharField(max_length=100, blank=True)
