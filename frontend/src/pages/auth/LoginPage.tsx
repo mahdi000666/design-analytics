@@ -33,8 +33,8 @@ export default function LoginPage() {
   try {
     const { data } = await apiClient.post('/auth/token/', { email, password });
     login(data.access, data.refresh);
-    const payload = JSON.parse(atob(data.access.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    navigate(ROLE_HOME[payload.role] ?? '/', { replace: true });
+    const decoded = login(data.access, data.refresh);
+    navigate(ROLE_HOME[decoded.role] ?? '/', { replace: true });
   } catch (err) {
     const e = err as { response?: { data?: { detail?: string } } };
     setError(e.response?.data?.detail ?? 'Invalid email or password.');

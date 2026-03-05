@@ -9,16 +9,7 @@ from .models import User, Designer, Client, InvitationToken
 
 
 @receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
-    if not created:
-        return
-    if instance.role == 'Designer':
-        Designer.objects.get_or_create(user=instance)
-    elif instance.role == 'Client':
-        Client.objects.get_or_create(user=instance)
-
-@receiver(post_save, sender=User)
-def handle_user_created(sender, instance, created, **kwargs):
+def on_user_created(sender, instance, created, **kwargs):
     """
     Fires automatically after every User save.
     'created' is True only on first creation, False on updates.
@@ -26,6 +17,12 @@ def handle_user_created(sender, instance, created, **kwargs):
     """
     if not created:
         return
+    
+    # Create profile
+    if instance.role == 'Designer':
+        Designer.objects.get_or_create(user=instance)
+    elif instance.role == 'Client':
+        Client.objects.get_or_create(user=instance)
 
     # Generate a unique token
     token = InvitationToken.objects.create(

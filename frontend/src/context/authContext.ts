@@ -8,7 +8,7 @@ export interface AuthUser {
 
 export interface AuthContextValue {
   user: AuthUser | null;
-  login: (access: string, refresh: string) => void;
+  login: (access: string, refresh: string) => AuthUser;
   logout: () => void;
 }
 

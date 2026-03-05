@@ -20,10 +20,12 @@ function initUser(): AuthUser | null {
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(initUser);
 
-  const login = useCallback((access: string, refresh: string) => {
-    localStorage.setItem('access_token', access);
-    localStorage.setItem('refresh_token', refresh);
-    setUser(decodeJwt(access));
+  const login = useCallback((access: string, refresh: string): AuthUser => {
+  localStorage.setItem('access_token', access);
+  localStorage.setItem('refresh_token', refresh);
+  const decoded = decodeJwt(access)!;
+  setUser(decoded);
+  return decoded;
   }, []);
 
   const logout = useCallback(() => {
