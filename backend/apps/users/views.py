@@ -1,12 +1,23 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import ActivateAccountSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from .serializers import ActivateAccountSerializer, CustomTokenObtainPairSerializer
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Replaces the default simplejwt login view so it uses our serializer,
+    which embeds email and role in the JWT payload.
+    Everything else (response shape, HTTP method) is unchanged.
+    """
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])   # must be public — user has no token yet
+@permission_classes([AllowAny])   # public — user has no token yet
 def activate_account(request):
     serializer = ActivateAccountSerializer(data=request.data)
 
@@ -15,6 +26,7 @@ def activate_account(request):
 
     user = serializer.save()
 
-    return Response({
-        'message': f'Account activated. Welcome {user.full_name}, you can now log in.'
-    }, status=status.HTTP_200_OK)
+    return Response(
+        {'message': f'Account activated. Welcome {user.full_name}, you can now log in.'},
+        status=status.HTTP_200_OK,
+    )

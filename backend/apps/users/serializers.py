@@ -1,23 +1,33 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils import timezone
 from .models import InvitationToken
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Adds email and role into the JWT payload so the React AuthContext can
+    decode the user's identity without a separate /api/users/me/ call.
+    """
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)   # already contains user_id, exp, iat
+        token['email'] = user.email
+        token['role']  = user.role
+        return token
 
 
 class ActivateAccountSerializer(serializers.Serializer):
     """
     Validates the token and new password submitted from the activation page.
-    Not a ModelSerializer because we're not directly creating/updating
-    a single model — we're doing a multi-step operation across User and InvitationToken.
+    Not a ModelSerializer because we're doing a multi-step operation
+    across User and InvitationToken, not a single model create/update.
     """
     token    = serializers.CharField()
     password = serializers.CharField(min_length=8, write_only=True)
 
     def validate_token(self, value):
-        """
-        validate_<fieldname> methods run automatically during .is_valid().
-        This checks all three token conditions and raises a validation
-        error if any fail — DRF returns a 400 with the error message.
-        """
         try:
             invitation = InvitationToken.objects.get(token=value)
         except InvitationToken.DoesNotExist:
@@ -32,17 +42,13 @@ class ActivateAccountSerializer(serializers.Serializer):
         return value
 
     def save(self):
-        """
-        Called after validation passes. Sets the password, activates
-        the user, and marks the token as used in one transaction.
-        """
         token_value = self.validated_data['token']
         password    = self.validated_data['password']
 
         invitation = InvitationToken.objects.get(token=token_value)
         user       = invitation.user
 
-        user.set_password(password)   # hashes the password — never stored as plain text
+        user.set_password(password)
         user.is_active = True
         user.save()
 

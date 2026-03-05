@@ -5,8 +5,17 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
-from .models import User, InvitationToken
+from .models import User, Designer, Client, InvitationToken
 
+
+@receiver(post_save, sender=User)
+def create_profile(sender, instance, created, **kwargs):
+    if not created:
+        return
+    if instance.role == 'Designer':
+        Designer.objects.get_or_create(user=instance)
+    elif instance.role == 'Client':
+        Client.objects.get_or_create(user=instance)
 
 @receiver(post_save, sender=User)
 def handle_user_created(sender, instance, created, **kwargs):
