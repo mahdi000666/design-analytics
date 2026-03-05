@@ -1,0 +1,49 @@
+import uuid
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+from .models import User, InvitationToken
+
+
+@receiver(post_save, sender=User)
+def handle_user_created(sender, instance, created, **kwargs):
+    """
+    Fires automatically after every User save.
+    'created' is True only on first creation, False on updates.
+    We only want to send an invitation on first creation.
+    """
+    if not created:
+        return
+
+    # Generate a unique token
+    token = InvitationToken.objects.create(
+        user=instance,
+        token=str(uuid.uuid4()),
+        expires_at=timezone.now() + timedelta(hours=48),
+    )
+
+    # Build the activation link
+    activation_link = f"{settings.FRONTEND_URL}/activate?token={token.token}"
+
+    # Send the email
+    send_mail(
+        subject='You have been invited to Design Analytics',
+        message=f"""
+Hi {instance.full_name},
+
+You have been added to the Design Analytics platform as a {instance.role}.
+
+Click the link below to set your password and activate your account:
+{activation_link}
+
+This link expires in 48 hours and can only be used once.
+
+If you did not expect this email, you can ignore it.
+        """,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[instance.email],
+        fail_silently=False,
+    )
