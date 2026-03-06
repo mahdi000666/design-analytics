@@ -21,9 +21,6 @@ export default function LoginPage() {
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
 
-  // If already logged in (e.g. navigated here manually), send them to their dashboard
-  //if (user) return <Navigate to={ROLE_HOME[user.role] ?? '/'} replace />;
-
   // Show a success message when arriving from the activation page
   const justActivated = (location.state as { activated?: boolean } | null)?.activated === true;
 
@@ -32,7 +29,6 @@ export default function LoginPage() {
   setLoading(true);
   try {
     const { data } = await apiClient.post('/auth/token/', { email, password });
-    login(data.access, data.refresh);
     const decoded = login(data.access, data.refresh);
     navigate(ROLE_HOME[decoded.role] ?? '/', { replace: true });
   } catch (err) {
