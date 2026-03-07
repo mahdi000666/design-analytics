@@ -243,8 +243,6 @@ All computed server-side via PostgreSQL aggregations. No stored calculated field
 | S5 | 9–10 | BI dashboards & file uploads: KPI cards, charts, profitability table, file uploads, messages | 22 |
 | S6 | 11–12 | Charts, reports, QA, deployment: full chart suite, PDF/Excel, tests, Render deploy, README | 26 |
 
-**Current sprint:** S1 — Foundation
-
 **Per-sprint risks:**
 - **S1:** Model mistakes cascade — validate every field against ERD before first migration
 - **S2:** Gmail SMTP setup blocks progress — test email on day 1 of the sprint
