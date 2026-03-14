@@ -30,139 +30,142 @@ Each session:
 
 Tick items off as you complete them. Each item maps to a user story in the sprint plan.
 
-### Sprint 1 — Foundation & Data Layer (Weeks 1–2)
-**Goal:** Working backend skeleton, all models migrated, JWT login endpoint, React app scaffolded.
+### Sprint 1 — Foundation & Auth (Weeks 1–2)
+**Goal:** Authentication, password creation, and user management are fully operational. (US-01 – US-05, 16 days)
 
-- [ ] **US-01** Django project scaffolded with PostgreSQL connection verified
-- [ ] **US-02** React/TypeScript SPA scaffolded (Vite), routing configured, app loads at :5173
-- [ ] **US-03** All models created and migrated:
+**Infrastructure (no US — prerequisite work)**
+- [ ] Django project scaffolded with PostgreSQL connection verified
+- [ ] React/TypeScript SPA scaffolded (Vite), routing configured, app loads at :5173
+- [ ] All models created and migrated:
   - [ ] Custom `User` model with `role` enum and custom `UserManager` (email login)
   - [ ] `Designer` profile model (OneToOne → User)
   - [ ] `Client` profile model (OneToOne → User)
   - [ ] `InvitationToken` model
-  - [ ] `Project` model
-  - [ ] `ProjectAssignment` model
-  - [ ] `Task` model (with `parent_task` self-FK and `is_unplanned`)
-  - [ ] `TimeLog` model
-  - [ ] `Feedback` model
-  - [ ] `Message` model
-  - [ ] `FileUpload` model
+  - [ ] `Project`, `ProjectAssignment`, `Task`, `TimeLog`, `Feedback`, `Message`, `FileUpload` models
   - [ ] All migrations run clean — `python manage.py migrate` with no errors
-- [ ] **US-04** JWT login endpoint (`POST /api/auth/token/`) returns access + refresh tokens
-- [ ] **US-04** Token refresh endpoint (`POST /api/auth/token/refresh/`) works
-- [ ] **US-04** Protected test route returns 401 without token, 200 with valid token
-- [ ] **US-05** All models registered in Django Admin — Manager can create Designer/Client users via Admin panel
-
-⚠️ **Risk:** Model mistakes cascade. Validate every field name against the ERD in DATA_MODEL.md before running the first migration. Changing models after migrating costs time.
-
----
-
-### Sprint 2 — Authentication & User Onboarding (Weeks 3–4)
-**Goal:** Full onboarding flow — Manager creates account → email sent → user sets password → JWT login → role-based redirect.
-
-- [ ] **US-06** `post_save` signal on `User` auto-generates `InvitationToken` (UUID, 48h expiry)
-- [ ] **US-06** Email sent to new user with activation link on account creation
-- [ ] **US-07** Activation endpoint (`POST /api/auth/activate/`) validates token: exists + `is_used=False` + not expired
-- [ ] **US-07** Activation sets password, `User.is_active = True`, `token.is_used = True`
-- [ ] **US-07** React activation page (`/activate?token=xxx`) — password setup form
-- [ ] **US-07** Full flow tested: create user in Django Admin → receive email → click link → set password → can log in
-- [ ] **US-08** React login page (`/login`) — posts to `/api/auth/token/`, stores tokens
-- [ ] **US-08** `AuthContext` stores current user object (decoded from JWT) and exposes `role`
-- [ ] **US-08** `ProtectedRoute` component redirects unauthenticated users to `/login`
-- [ ] **US-09** Role-based redirect after login: Manager → `/manager`, Designer → `/designer`, Client → `/client`
-- [ ] **US-09** Stub dashboard pages for all three roles (can be empty — just need the routes to exist)
 - [ ] `IsManager`, `IsDesigner`, `IsClient`, `IsManagerOrDesigner` permission classes created
 - [ ] 403 responses verified: access a Manager-only endpoint as Designer/Client → HTTP 403
 
-⚠️ **Risk:** Gmail SMTP setup frequently blocks progress. Test email sending on day 1 of this sprint before writing any other S2 code. If SMTP fails, temporarily use Django's console email backend (`EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'`) to keep moving.
+- [ ] **US-01** JWT login endpoint (`POST /api/auth/token/`) returns access + refresh tokens
+- [ ] **US-01** Token refresh endpoint (`POST /api/auth/token/refresh/`) works
+- [ ] **US-01** React login page (`/login`) — posts to `/api/auth/token/`, stores tokens in localStorage
+- [ ] **US-01** `AuthContext` stores current user object (decoded from JWT) and exposes `role`
+- [ ] **US-01** `ProtectedRoute` component redirects unauthenticated users to `/login`
+- [ ] **US-01** Role-based redirect after login: Manager → `/manager`, Designer → `/designer`, Client → `/client`
+- [ ] **US-01** Stub dashboard pages for all three roles (routes exist, content placeholder)
+- [ ] **US-02** `post_save` signal on `User` auto-generates `InvitationToken` (UUID, 48 h expiry)
+- [ ] **US-02** React activation page (`/activate?token=xxx`) — password setup form
+- [ ] **US-02** Activation endpoint (`POST /api/auth/activate/`) validates token: exists + `is_used=False` + not expired
+- [ ] **US-02** Activation sets password, `User.is_active = True`, `token.is_used = True`
+- [ ] **US-03** Manager can create Designer/Client users via Django Admin panel
+- [ ] **US-04** Manager can view, edit, and deactivate users via Django Admin (or API endpoint)
+- [ ] **US-05** Email sent to new user with activation link on account creation
+- [ ] **US-05** Full flow tested: create user in Django Admin → receive email → click link → set password → can log in
+
+⚠️ **Risk:** Model mistakes cascade — validate every field against the ERD in DATA_MODEL.md before running the first migration. Test Gmail SMTP on day 1: use `EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'` as fallback if SMTP fails.
 
 ---
 
-### Sprint 3 — Project & Task Management (Weeks 5–6)
-**Goal:** Managers can create/edit/delete projects and tasks; designers and clients see their scoped views.
+### Sprint 2 — Project & Task Management (Weeks 3–4)
+**Goal:** Managers can create and manage projects and tasks; Designers can view their assigned projects. (US-06 – US-09, 19 days)
 
-- [ ] **US-10** Project CRUD endpoints (create/edit/delete: Manager only)
-- [ ] **US-10** React create project form (Manager) — client, budget hours, budget currency, deadline, description, category
-- [ ] **US-11** Designer assignment endpoint (`POST /api/projects/{id}/assign/`)
-- [ ] **US-11** React: assign designer UI on project detail page
-- [ ] **US-12** Task CRUD endpoints — supports `parent_task` for subtasks, `estimated_hours`
-- [ ] **US-12** React task list within project detail page (Manager view)
-- [ ] **US-12** React create task form — includes estimated hours and `is_unplanned` toggle
-- [ ] **US-13** Edit and delete for projects and tasks (Manager only)
-- [ ] **US-14** Project list endpoint filters to assigned projects only for Designer role
-- [ ] **US-14** React project list page (Designer view — assigned only)
-- [ ] **US-15** Project list endpoint filters to own projects only for Client role
-- [ ] **US-15** React project list page (Client view — own only, shows status)
+- [ ] **US-06** Project create endpoint (`POST /api/projects/`) — Manager only
+- [ ] **US-06** React create project form (Manager) — client, budget hours, budget amount, deadline, description, category
+- [ ] **US-07** Project list, detail, edit, delete endpoints — role-filtered queryset (Manager sees all, Designer sees assigned, Client sees own)
+- [ ] **US-07** React project list page (Manager view)
+- [ ] **US-07** Designer assignment endpoint (`POST /api/projects/{id}/assign/`)
+- [ ] **US-07** React: assign designer UI on project detail page
+- [ ] **US-07** Edit and delete for projects (Manager only)
+- [ ] **US-08** Task CRUD endpoints — supports `parent_task` for subtasks, `estimated_hours`, `is_unplanned` flag
+- [ ] **US-08** React task list within project detail page (Manager view)
+- [ ] **US-08** React create/edit task form — includes estimated hours and `is_unplanned` toggle
+- [ ] **US-08** `is_unplanned=True` tasks visually flagged in the UI (badge or colour indicator)
+- [ ] **US-09** React project list page (Designer view — assigned only)
 - [ ] Budget progress bar (hours used / budget hours) visible on project detail
 
 ⚠️ **Risk:** RBAC queryset filtering must be correct before building client-facing views. Test that a Designer cannot see a project they are not assigned to, and a Client cannot see another client's project, before moving to UI work.
 
 ---
 
-### Sprint 4 — Time Tracking & Feedback (Weeks 7–8)
-**Goal:** Designers log time per task; clients submit categorised feedback; managers view all data.
+### Sprint 3 — Time Tracking & Deliverables (Weeks 5–6)
+**Goal:** Designers can log time, update task status, upload deliverables, and view client feedback. (US-10 – US-13, 13 days)
 
-- [ ] **US-16** TimeLog CRUD endpoints — Designer logs against a specific task with description
-- [ ] **US-16** React time log form (Designer) — select task, enter hours and description
-- [ ] **US-17** Task status update endpoint (`PATCH /api/tasks/{id}/`) — Designer/Manager
-- [ ] **US-17** React task status toggle (Todo → InProgress → Completed) on task list
-- [ ] **US-18** Manager can see all time logs across projects and designers
-- [ ] **US-18** React time log list on project detail (Manager view) — shows designer, task, hours, date
-- [ ] **US-19** `is_unplanned=True` tasks visually flagged in the UI (badge or colour indicator)
-- [ ] **US-19** Manager can mark a task as unplanned when creating or editing it
-- [ ] **US-20** Feedback submission endpoint (`POST /api/feedback/`) — Client only
-- [ ] **US-20** React feedback form (Client) — category (Revision/Approval/Question), content
-- [ ] **US-21** Feedback list endpoint for a project — visible to Manager and Designer
-- [ ] **US-21** React feedback list (Manager/Designer) with status update (Pending → InProgress → Resolved)
-- [ ] `resolved_at` automatically set in serializer when status transitions to `'Resolved'`
+- [ ] **US-10** TimeLog CRUD endpoints — Designer logs against a specific task with description
+- [ ] **US-10** React time log form (Designer) — select task, enter hours and description
+- [ ] **US-10** Manager can see all time logs across projects and designers
+- [ ] **US-10** React time log list on project detail (Manager view) — shows designer, task, hours, date
+- [ ] **US-11** Task status update endpoint (`PATCH /api/tasks/{id}/`) — Designer/Manager
+- [ ] **US-11** React task status toggle (Todo → InProgress → Completed) on task list
+- [ ] **US-12** File upload endpoint (`POST /api/files/`) — multipart/form-data, stored in `MEDIA_ROOT`
+- [ ] **US-12** React file upload component (Designer uploads deliverables)
+- [ ] **US-12** React file list with download links
+- [ ] **US-13** Feedback list endpoint for a project — visible to Manager and Designer
+- [ ] **US-13** React feedback list (Manager/Designer) — shows category, content, status
 
-⚠️ **Risk:** Keep the `is_unplanned` UI simple — a checkbox on the task form is enough for MVP. Do not over-engineer it.
+⚠️ **Risk:** Files stored in `MEDIA_ROOT` will be lost on Render redeploy (ephemeral disk). Decide on Cloudinary or S3 early — wiring it in later is painful. Keep the `is_unplanned` UI simple (a checkbox on the task form is enough for MVP).
 
 ---
 
-### Sprint 5 — BI Dashboards & File Uploads (Weeks 9–10)
-**Goal:** Core KPI cards, budget vs actual bar chart, EHR, client profitability table, file uploads, and message board operational.
+### Sprint 4 — Client Portal & Feedback (Weeks 7–8)
+**Goal:** Clients can view project status, upload reference materials, and submit feedback; Designers and Managers can reply to and resolve feedback; all roles can send messages. (US-14 – US-18, 19 days)
+
+- [ ] **US-14** React feedback reply UI (Designer) — reply field on a feedback item, stored as a Message or Feedback sub-entry
+- [ ] **US-15** Message list + create endpoints (`GET/POST /api/messages/?project={id}`)
+- [ ] **US-15** React project message board — all roles on a project can send and view messages
+- [ ] **US-16** Project list endpoint filters to own projects only for Client role
+- [ ] **US-16** React project list page (Client view — own only, shows status)
+- [ ] **US-16** React project detail page (Client view — status, budget progress, deadline)
+- [ ] **US-17** React file upload component (Client uploads reference materials)
+- [ ] **US-17** File type scoped: Client uploads `reference` or `brand_guideline`; Designer uploads `deliverable`
+- [ ] **US-18** Feedback submission endpoint (`POST /api/feedback/`) — Client only
+- [ ] **US-18** React feedback form (Client) — category (Revision/Approval/Question), content
+- [ ] **US-18** Feedback status update endpoint (Manager/Designer) — Pending → InProgress → Resolved
+- [ ] **US-18** `resolved_at` automatically set in serializer when status transitions to `'Resolved'`
+
+⚠️ **Risk:** This sprint has the broadest feature surface. Prioritise US-16 (Client portal) and US-18 (feedback) first — US-14 (reply) and US-15 (messaging) can slip to minimum viable if time runs short.
+
+---
+
+### Sprint 5 — BI Dashboards (Weeks 9–10)
+**Goal:** Manager BI dashboards operational with KPI cards, budget vs. actual charts, EHR, client profitability, designer utilisation, and scope creep index. (US-20, 8 days)
 
 - [ ] **DB indexes added first** — add all indexes from DATA_MODEL.md before writing any analytics queries
-- [ ] **US-22** File upload endpoint (`POST /api/files/`) — multipart/form-data, stored in `MEDIA_ROOT`
-- [ ] **US-22** React file upload component (Client uploads reference materials; Designer uploads deliverables)
-- [ ] **US-22** React file list with download links
-- [ ] **US-23** Message list + create endpoints (`GET/POST /api/messages/?project={id}`)
-- [ ] **US-23** React project message board — all roles on a project can send and view messages
-- [ ] **US-24** Analytics endpoint: budget vs actual hours per project
-- [ ] **US-24** React: Budget vs Actual bar chart (Recharts `BarChart`)
-- [ ] **US-25** Analytics endpoint: EHR per project (`budget_amount / SUM(hours_spent)`)
-- [ ] **US-25** EHR displayed per project on the manager dashboard
-- [ ] **US-26** Analytics endpoint: client profitability ranking (revenue, total hours, revision count)
-- [ ] **US-26** React: client profitability ranking table
-- [ ] **US-27** Analytics endpoint: scope creep index per project
-- [ ] **US-27** Scope creep index displayed per project
-- [ ] **US-28** Analytics endpoint: KPI summary (total revenue, avg EHR, active project count, pending feedback count)
-- [ ] **US-28** React: KPI cards on manager dashboard
+- [ ] **US-20** Analytics endpoint: KPI summary (total revenue, avg EHR, active project count, pending feedback count)
+- [ ] **US-20** React: KPI cards on manager dashboard
+- [ ] **US-20** Analytics endpoint: budget vs actual hours per project
+- [ ] **US-20** React: Budget vs Actual bar chart (Recharts `BarChart`)
+- [ ] **US-20** Analytics endpoint: EHR per project (`budget_amount / SUM(hours_spent)`)
+- [ ] **US-20** EHR displayed per project on the manager dashboard
+- [ ] **US-20** Analytics endpoint: client profitability ranking (revenue, total hours, revision count)
+- [ ] **US-20** React: client profitability ranking table
+- [ ] **US-20** Analytics endpoint: scope creep index per project
+- [ ] **US-20** Scope creep index displayed per project
+- [ ] **US-20** Analytics endpoint: designer utilisation (`SUM(hours this week) / available_hours_per_week * 100`)
+- [ ] **US-20** React: designer utilisation display
 
-⚠️ **Risk:** PostgreSQL aggregate queries across multiple joined tables can be slow without indexes. Add them before testing analytics queries, not after.
+⚠️ **Risk:** PostgreSQL aggregate queries across multiple joined tables can be slow without indexes — add them before testing, not after.
 
 ---
 
-### Sprint 6 — Charts, Reports, Testing & Deployment (Weeks 11–12)
-**Goal:** Full chart suite, PDF/Excel export, API tests passing, deployed and documented.
+### Sprint 6 — Reports, Export & Deployment (Weeks 11–12)
+**Goal:** Report generation with filters, PDF/Excel export, API tests passing, deployed and documented. (US-21 – US-22, 10 days)
 
-- [ ] **US-29** React: line chart — cumulative hours over time (Recharts `LineChart`)
-- [ ] **US-29** React: pie chart — revenue by client (Recharts `PieChart`)
-- [ ] **US-29** React: bar chart for budget vs actual already done in S5 — verify it's polished
-- [ ] **US-30** Dashboard filter controls: date range, client selector, project selector
-- [ ] **US-30** Analytics endpoints accept `?date_from=&date_to=&client=&project=` query params
-- [ ] **US-31** PDF export endpoint (ReportLab) — project profitability summary
-- [ ] **US-31** React: Export PDF button triggers file download
-- [ ] **US-32** Excel export endpoint (openpyxl) — client profitability + budget data
-- [ ] **US-32** React: Export Excel button
-- [ ] **US-33** API tests: auth flow, project CRUD, time log, feedback (Django `TestCase`)
-- [ ] **US-34** Backend deployed to Render Web Service
-- [ ] **US-34** Frontend deployed to Render Static Site
-- [ ] **US-34** Both connected to Render PostgreSQL — end-to-end flow verified on live URLs
-- [ ] **US-35** README updated with screenshots and setup instructions
+- [ ] **US-21** React: line chart — cumulative hours over time (Recharts `LineChart`)
+- [ ] **US-21** React: pie chart — revenue by client (Recharts `PieChart`)
+- [ ] **US-21** React: budget vs actual bar chart from S5 — verify it is polished
+- [ ] **US-21** Dashboard filter controls: date range, client selector, project selector
+- [ ] **US-21** Analytics endpoints accept `?date_from=&date_to=&client=&project=` query params
+- [ ] **US-22** PDF export endpoint (ReportLab) — project profitability summary
+- [ ] **US-22** React: Export PDF button triggers file download
+- [ ] **US-22** Excel export endpoint (openpyxl) — client profitability + budget data
+- [ ] **US-22** React: Export Excel button
+- [ ] API tests: auth flow, project CRUD, time log, feedback (Django `TestCase`)
+- [ ] Backend deployed to Render Web Service
+- [ ] Frontend deployed to Render Static Site
+- [ ] Both connected to Render PostgreSQL — end-to-end flow verified on live URLs
+- [ ] README updated with screenshots and setup instructions
 
-⚠️ **Risk:** ReportLab (PDF generation) has a steeper learning curve than openpyxl. Prioritise PDF first — if time runs short, Excel is lower priority (US-32 is marked Low).
+⚠️ **Risk:** ReportLab (PDF generation) has a steeper learning curve than openpyxl. Prioritise PDF first — if time runs short, Excel export is lower priority.
 
 ---
 

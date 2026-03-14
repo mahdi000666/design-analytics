@@ -232,21 +232,22 @@ All computed server-side via PostgreSQL aggregations. No stored calculated field
 
 ## Sprint Plan
 
-6 × 2-week sprints. Update the checkbox as you progress.
+6 × 2-week sprints. Update the checkbox as you progress. Estimation in person-days; total: 85.
 
-| Sprint | Weeks | Goal | Pts |
-|--------|-------|------|-----|
-| **S1** | 1–2 | Foundation: scaffold Django + React, all models migrated, JWT endpoint, Django Admin working | 16 |
-| S2 | 3–4 | Auth & onboarding: invitation token flow, activation, login, role-based redirect | 15 |
-| S3 | 5–6 | Project & task management: CRUD, designer assignment, role-scoped views | 15 |
-| S4 | 7–8 | Time tracking & feedback: time logging, task status, client feedback, resolution | 15 |
-| S5 | 9–10 | BI dashboards & file uploads: KPI cards, charts, profitability table, file uploads, messages | 22 |
-| S6 | 11–12 | Charts, reports, QA, deployment: full chart suite, PDF/Excel, tests, Render deploy, README | 26 |
+| Sprint | Weeks | Goal | Days |
+|--------|-------|------|------|
+| **S1** | 1–2 | Foundation & Auth: scaffold Django + React, all models migrated, JWT login, invitation flow, user management | 16 |
+| S2 | 3–4 | Project & Task Management: project/task CRUD, designer assignment, role-scoped views | 19 |
+| S3 | 5–6 | Time Tracking & Deliverables: time logging, task status, file uploads, view client feedback | 13 |
+| S4 | 7–8 | Client Portal & Feedback: client portal, feedback submission & replies, resolution, messaging | 19 |
+| S5 | 9–10 | BI Dashboards: KPI cards, budget vs actual, EHR, client profitability, scope creep | 8 |
+| S6 | 11–12 | Reports, Export & Deployment: report generation, PDF/Excel export, tests, Render deploy, README | 10 |
 
 **Per-sprint risks:**
-- **S1:** Model mistakes cascade — validate every field against ERD before first migration
-- **S2:** Gmail SMTP setup blocks progress — test email on day 1 of the sprint
-- **S3:** RBAC queryset filtering must be correct before building client-facing views
+- **S1:** Model mistakes cascade — validate every field against ERD before first migration; test Gmail SMTP on day 1
+- **S2:** RBAC queryset filtering must be correct before building client-facing views
+- **S3:** File upload storage — plan Cloudinary/S3 early; Render disk is ephemeral
+- **S4:** Keep messaging UI simple for MVP; scope creep risk is high for this sprint
 - **S5:** Add DB indexes before writing aggregate queries
 - **S6:** ReportLab (PDF) is fiddly — prioritise it over Excel
 
