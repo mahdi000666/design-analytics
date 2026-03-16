@@ -127,38 +127,38 @@ Tick items off as you complete them. Each item maps to a user story in the sprin
 ---
 
 ### Sprint 5 — BI Dashboards (Weeks 9–10)
-**Goal:** Manager BI dashboards operational with KPI cards, budget vs. actual charts, EHR, client profitability, designer utilisation, and scope creep index. (US-20, 8 days)
+**Goal:** Manager BI dashboards operational with KPI cards, budget vs. actual charts, EHR, client profitability, designer utilisation, and scope creep index. (US-19, 8 days)
 
 - [ ] **DB indexes added first** — add all indexes from DATA_MODEL.md before writing any analytics queries
-- [ ] **US-20** Analytics endpoint: KPI summary (total revenue, avg EHR, active project count, pending feedback count)
-- [ ] **US-20** React: KPI cards on manager dashboard
-- [ ] **US-20** Analytics endpoint: budget vs actual hours per project
-- [ ] **US-20** React: Budget vs Actual bar chart (Recharts `BarChart`)
-- [ ] **US-20** Analytics endpoint: EHR per project (`budget_amount / SUM(hours_spent)`)
-- [ ] **US-20** EHR displayed per project on the manager dashboard
-- [ ] **US-20** Analytics endpoint: client profitability ranking (revenue, total hours, revision count)
-- [ ] **US-20** React: client profitability ranking table
-- [ ] **US-20** Analytics endpoint: scope creep index per project
-- [ ] **US-20** Scope creep index displayed per project
-- [ ] **US-20** Analytics endpoint: designer utilisation (`SUM(hours this week) / available_hours_per_week * 100`)
-- [ ] **US-20** React: designer utilisation display
+- [ ] **US-19** Analytics endpoint: KPI summary (total revenue, avg EHR, active project count, pending feedback count)
+- [ ] **US-19** React: KPI cards on manager dashboard
+- [ ] **US-19** Analytics endpoint: budget vs actual hours per project
+- [ ] **US-19** React: Budget vs Actual bar chart (Recharts `BarChart`)
+- [ ] **US-19** Analytics endpoint: EHR per project (`budget_amount / SUM(hours_spent)`)
+- [ ] **US-19** EHR displayed per project on the manager dashboard
+- [ ] **US-19** Analytics endpoint: client profitability ranking (revenue, total hours, revision count)
+- [ ] **US-19** React: client profitability ranking table
+- [ ] **US-19** Analytics endpoint: scope creep index per project
+- [ ] **US-19** Scope creep index displayed per project
+- [ ] **US-19** Analytics endpoint: designer utilisation (`SUM(hours this week) / available_hours_per_week * 100`)
+- [ ] **US-19** React: designer utilisation display
 
 ⚠️ **Risk:** PostgreSQL aggregate queries across multiple joined tables can be slow without indexes — add them before testing, not after.
 
 ---
 
 ### Sprint 6 — Reports, Export & Deployment (Weeks 11–12)
-**Goal:** Report generation with filters, PDF/Excel export, API tests passing, deployed and documented. (US-21 – US-22, 10 days)
+**Goal:** Report generation with filters, PDF/Excel export, API tests passing, deployed and documented. (US-20 – US-21, 10 days)
 
-- [ ] **US-21** React: line chart — cumulative hours over time (Recharts `LineChart`)
-- [ ] **US-21** React: pie chart — revenue by client (Recharts `PieChart`)
-- [ ] **US-21** React: budget vs actual bar chart from S5 — verify it is polished
-- [ ] **US-21** Dashboard filter controls: date range, client selector, project selector
-- [ ] **US-21** Analytics endpoints accept `?date_from=&date_to=&client=&project=` query params
-- [ ] **US-22** PDF export endpoint (ReportLab) — project profitability summary
-- [ ] **US-22** React: Export PDF button triggers file download
-- [ ] **US-22** Excel export endpoint (openpyxl) — client profitability + budget data
-- [ ] **US-22** React: Export Excel button
+- [ ] **US-20** React: line chart — cumulative hours over time (Recharts `LineChart`)
+- [ ] **US-20** React: pie chart — revenue by client (Recharts `PieChart`)
+- [ ] **US-20** React: budget vs actual bar chart from S5 — verify it is polished
+- [ ] **US-20** Dashboard filter controls: date range, client selector, project selector
+- [ ] **US-20** Analytics endpoints accept `?date_from=&date_to=&client=&project=` query params
+- [ ] **US-21** PDF export endpoint (ReportLab) — project profitability summary
+- [ ] **US-21** React: Export PDF button triggers file download
+- [ ] **US-21** Excel export endpoint (openpyxl) — client profitability + budget data
+- [ ] **US-21** React: Export Excel button
 - [ ] API tests: auth flow, project CRUD, time log, feedback (Django `TestCase`)
 - [ ] Backend deployed to Render Web Service
 - [ ] Frontend deployed to Render Static Site
