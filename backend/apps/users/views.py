@@ -3,6 +3,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
+from apps.users.permissions import IsManager
+from apps.users.models import Client, Designer
 
 from .serializers import ActivateAccountSerializer, CustomTokenObtainPairSerializer
 
@@ -30,3 +32,16 @@ def activate_account(request):
         {'message': f'Account activated. Welcome {user.full_name}, you can now log in.'},
         status=status.HTTP_200_OK,
     )
+
+@api_view(['GET'])
+@permission_classes([IsManager])
+def client_list(request):
+    clients = Client.objects.select_related('user').all()
+    return Response([{'id': c.id, 'name': c.user.full_name} for c in clients])
+
+
+@api_view(['GET'])
+@permission_classes([IsManager])
+def designer_list(request):
+    designers = Designer.objects.select_related('user').all()
+    return Response([{'id': d.id, 'name': d.user.full_name} for d in designers])

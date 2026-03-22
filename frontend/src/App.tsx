@@ -4,6 +4,9 @@ import AuthProvider from './context/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/auth/LoginPage';
 import ActivatePage from './pages/auth/ActivatePage';
+import ProjectList from './pages/manager/ProjectList';
+import ProjectDetail from './pages/manager/ProjectDetail';
+import DesignerProjects from './pages/designer/DesignerProjects';
 
 // Temporary stub component — replaced with real pages in Sprint 3+
 const Stub = ({ label }: { label: string }) => (
@@ -33,6 +36,9 @@ export default function App() {
           {/* Public routes — no token required */}
           <Route path="/login"    element={<LoginPage />} />
           <Route path="/activate" element={<ActivatePage />} />
+          <Route path="/manager/projects"     element={<ProjectList />} />
+          <Route path="/manager/projects/:id" element={<ProjectDetail />} />
+          <Route path="/designer/projects"    element={<DesignerProjects />} />
 
           {/* Role-gated dashboards */}
           <Route
