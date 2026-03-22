@@ -28,10 +28,12 @@ export const deleteTask = async (id: number): Promise<void> => {
 export const estimateTaskHours = async (
   taskName: string,
   description: string,
+  projectId: number,
 ): Promise<HourEstimate> => {
   const { data } = await apiClient.post<HourEstimate>('/tasks/estimate-hours/', {
     task_name:   taskName,
     description,
+    project_id:  projectId,   // lets the backend pull historical TimeLog context
   });
   return data;
 };

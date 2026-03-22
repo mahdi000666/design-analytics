@@ -76,3 +76,8 @@ class InvitationToken(models.Model):
 
     def __str__(self):
         return f'Token for {self.user.email} (used={self.is_used})'
+    
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(hours=48)
+        super().save(*args, **kwargs)

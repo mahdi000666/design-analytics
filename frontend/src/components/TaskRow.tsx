@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDeleteTask, useUpdateTask } from '../hooks/useTasks';
-import type { Task } from '../types/task';
+import TaskForm from './TaskForm';
+import type { Task, TaskPayload } from '../types/task';
 
 interface Props {
   task:      Task;
@@ -21,19 +22,27 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 const TaskRow = ({ task, projectId, isManager }: Props) => {
-  const deleteTask  = useDeleteTask(projectId);
-  const updateTask  = useUpdateTask(projectId);
+  const deleteTask = useDeleteTask(projectId);
+  const updateTask = useUpdateTask(projectId);
+
   const [expanded, setExpanded] = useState(false);
+  const [editing,  setEditing]  = useState(false);
 
   const handleStatusClick = () => {
-    updateTask.mutate({
-      id:      task.id,
-      payload: { status: STATUS_CYCLE[task.status] },
-    });
+    updateTask.mutate({ id: task.id, payload: { status: STATUS_CYCLE[task.status] } });
+  };
+
+  const handleEdit = (payload: TaskPayload) => {
+    updateTask.mutate(
+      { id: task.id, payload },
+      { onSuccess: () => setEditing(false) },
+    );
   };
 
   return (
     <div className="border rounded-lg mb-2 bg-white shadow-sm">
+
+      {/* Main row */}
       <div className="flex items-center gap-3 px-4 py-3">
 
         {task.is_unplanned && (
@@ -48,7 +57,7 @@ const TaskRow = ({ task, projectId, isManager }: Props) => {
           {task.estimated_hours != null ? `${task.estimated_hours}h est.` : 'No estimate'}
         </span>
 
-        {/* Clicking the status badge cycles it — available to both roles */}
+        {/* Clicking cycles status — available to all roles */}
         <button
           onClick={handleStatusClick}
           disabled={updateTask.isPending}
@@ -66,17 +75,39 @@ const TaskRow = ({ task, projectId, isManager }: Props) => {
           </button>
         )}
 
-        {/* Delete — manager only */}
+        {/* Edit and Delete — manager only */}
         {isManager && (
-          <button
-            onClick={() => deleteTask.mutate(task.id)}
-            className="text-xs text-red-400 hover:text-red-600"
-          >
-            Delete
-          </button>
+          <>
+            <button
+              onClick={() => setEditing(v => !v)}
+              className="text-xs text-gray-400 hover:text-violet-600"
+            >
+              {editing ? 'Cancel' : 'Edit'}
+            </button>
+            <button
+              onClick={() => deleteTask.mutate(task.id)}
+              disabled={deleteTask.isPending}
+              className="text-xs text-red-400 hover:text-red-600"
+            >
+              Delete
+            </button>
+          </>
         )}
       </div>
 
+      {/* Inline edit form — manager only, toggled by Edit button */}
+      {editing && isManager && (
+        <div className="border-t px-4 py-4 bg-gray-50">
+          <TaskForm
+            projectId={projectId}
+            defaults={task}
+            onSubmit={handleEdit}
+            isLoading={updateTask.isPending}
+          />
+        </div>
+      )}
+
+      {/* Subtasks */}
       {expanded && task.subtasks.map(sub => (
         <div
           key={sub.id}
@@ -91,6 +122,7 @@ const TaskRow = ({ task, projectId, isManager }: Props) => {
           <span className="text-gray-400">{sub.status}</span>
         </div>
       ))}
+
     </div>
   );
 };

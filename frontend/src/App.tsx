@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
-import AuthProvider from './context/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/auth/LoginPage';
 import ActivatePage from './pages/auth/ActivatePage';
@@ -32,7 +31,6 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
       <BrowserRouter>
         <Routes>
 
@@ -69,6 +67,5 @@ export default function App() {
 
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
   );
 }

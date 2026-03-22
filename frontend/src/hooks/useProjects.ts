@@ -12,7 +12,7 @@ export const useCreateProject = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: projectsApi.createProject,
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ['projects'] }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: ['projects'], exact: true }),
   });
 };
 
@@ -28,7 +28,12 @@ export const useDeleteProject = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: projectsApi.deleteProject,
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ['projects'] }),
+    onSuccess: (_, deletedId) => {
+      // Invalidate the list but remove the detail entry — don't trigger a
+      // 404 refetch on the now-deleted project while the page is still mounted.
+      qc.invalidateQueries({ queryKey: ['projects'], exact: true });
+      qc.removeQueries({ queryKey: ['projects', deletedId] });
+    },
   });
 };
 

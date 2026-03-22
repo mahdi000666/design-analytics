@@ -10,7 +10,6 @@ from .models import Task
 from .serializers import TaskReadSerializer, TaskWriteSerializer
 from apps.users.permissions import IsManager, IsManagerOrDesigner
 
-from django.db.models import Avg
 from apps.timelog.models import TimeLog
 
 
@@ -57,7 +56,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 # without the task existing yet.
 # ---------------------------------------------------------------------------
 
-_groq_client = Groq(api_key=os.environ['GROQ_API_KEY'])
+_groq_client = Groq(api_key=os.getenv('GROQ_API_KEY', ''))
 
 ESTIMATOR_SYSTEM_PROMPT = """
 You are an experienced graphic design project manager.

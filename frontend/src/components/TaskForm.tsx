@@ -3,14 +3,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { estimateTaskHours } from '../api/tasks';
-import type { TaskPayload } from '../types/task';
+import type { Task, TaskPayload } from '../types/task';
 
 const schema = z.object({
   task_name:       z.string().min(1, 'Task name is required'),
   description:     z.string().optional(),
-  estimated_hours: z.string().optional(),   // stays string; converted on submit
+  estimated_hours: z.string().optional(),
   is_unplanned:    z.boolean(),
-  parent_task:     z.string().optional(),   // stays string; converted on submit
+  parent_task:     z.string().optional(),
+  status:          z.enum(['Todo', 'InProgress', 'Completed']).optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -19,27 +20,42 @@ interface Props {
   projectId:  number;
   onSubmit:   (payload: TaskPayload) => void;
   isLoading:  boolean;
+  defaults?:  Partial<Task>;
 }
 
-const TaskForm = ({ projectId, onSubmit, isLoading }: Props) => {
-  const [estimating, setEstimating] = useState(false);
+const TaskForm = ({ projectId, onSubmit, isLoading, defaults }: Props) => {
+  const isEdit = defaults !== undefined;
+
+  const [estimating,  setEstimating]  = useState(false);
   const [aiReasoning, setAiReasoning] = useState<string | null>(null);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } =
-  useForm<FormValues>({
-    resolver:      zodResolver(schema),
-    defaultValues: { is_unplanned: false },
-  });
+  const { register, handleSubmit, setValue, getValues, formState: { errors } } =
+    useForm<FormValues>({
+      resolver:      zodResolver(schema),
+      defaultValues: {
+        is_unplanned:    defaults?.is_unplanned    ?? false,
+        task_name:       defaults?.task_name        ?? '',
+        description:     defaults?.description      ?? '',
+        estimated_hours: defaults?.estimated_hours != null
+          ? String(defaults.estimated_hours)
+          : '',
+        status:          defaults?.status           ?? 'Todo',
+        parent_task:     defaults?.parent_task != null
+          ? String(defaults.parent_task)
+          : '',
+      },
+    });
 
-  const taskName   = watch('task_name');
-  const description = watch('description');
-
+  // Read form values at click time — no reactive subscription needed.
   const handleEstimate = async () => {
+    const { task_name, description } = getValues();
+    if (!task_name) return;
+
     setEstimating(true);
     setAiReasoning(null);
-    const result = await estimateTaskHours(taskName ?? '', description ?? '');
+
+    const result = await estimateTaskHours(task_name, description ?? '', projectId);
     if (result.estimated_hours !== null) {
-      // Pre-fill the field — manager can still edit it before saving.
       setValue('estimated_hours', String(result.estimated_hours));
     }
     setAiReasoning(result.reasoning);
@@ -48,30 +64,39 @@ const TaskForm = ({ projectId, onSubmit, isLoading }: Props) => {
 
   const submit = (values: FormValues) => {
     onSubmit({
-        project:         projectId,
-        task_name:       values.task_name,
-        description:     values.description,
-        estimated_hours: values.estimated_hours ? parseFloat(values.estimated_hours) : null,
-        is_unplanned:    values.is_unplanned,
-        parent_task:     values.parent_task     ? parseInt(values.parent_task, 10)   : null,
+      project:         projectId,
+      task_name:       values.task_name,
+      description:     values.description,
+      estimated_hours: values.estimated_hours ? parseFloat(values.estimated_hours) : null,
+      is_unplanned:    values.is_unplanned,
+      parent_task:     values.parent_task ? parseInt(values.parent_task, 10) : null,
+      ...(isEdit && values.status ? { status: values.status } : {}),
     });
-};
+  };
 
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-4">
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Task name</label>
-        <input {...register('task_name')} className="mt-1 block w-full rounded border-gray-300 shadow-sm" />
-        {errors.task_name && <p className="text-red-500 text-xs mt-1">{errors.task_name.message}</p>}
+        <input
+          {...register('task_name')}
+          className="mt-1 block w-full rounded border-gray-300 shadow-sm"
+        />
+        {errors.task_name && (
+          <p className="text-red-500 text-xs mt-1">{errors.task_name.message}</p>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Description</label>
-        <textarea {...register('description')} rows={3} className="mt-1 block w-full rounded border-gray-300 shadow-sm" />
+        <textarea
+          {...register('description')}
+          rows={3}
+          className="mt-1 block w-full rounded border-gray-300 shadow-sm"
+        />
       </div>
 
-      {/* AI Estimator */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Estimated hours</label>
         <div className="flex gap-2 mt-1">
@@ -84,7 +109,7 @@ const TaskForm = ({ projectId, onSubmit, isLoading }: Props) => {
           <button
             type="button"
             onClick={handleEstimate}
-            disabled={estimating || !taskName}
+            disabled={estimating}
             className="px-3 py-1.5 text-sm bg-violet-600 text-white rounded hover:bg-violet-700 disabled:opacity-50"
           >
             {estimating ? 'Estimating…' : '✦ AI Suggest'}
@@ -94,6 +119,20 @@ const TaskForm = ({ projectId, onSubmit, isLoading }: Props) => {
           <p className="text-xs text-gray-500 mt-1 italic">{aiReasoning}</p>
         )}
       </div>
+
+      {isEdit && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Status</label>
+          <select
+            {...register('status')}
+            className="mt-1 block w-full rounded border-gray-300 shadow-sm"
+          >
+            <option value="Todo">Todo</option>
+            <option value="InProgress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <input type="checkbox" id="is_unplanned" {...register('is_unplanned')} />
@@ -107,8 +146,9 @@ const TaskForm = ({ projectId, onSubmit, isLoading }: Props) => {
         disabled={isLoading}
         className="w-full py-2 bg-gray-900 text-white rounded hover:bg-gray-700 disabled:opacity-50"
       >
-        {isLoading ? 'Saving…' : 'Save task'}
+        {isLoading ? 'Saving…' : isEdit ? 'Save changes' : 'Save task'}
       </button>
+
     </form>
   );
 };
