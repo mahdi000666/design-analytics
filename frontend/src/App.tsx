@@ -7,17 +7,10 @@ import ActivatePage from './pages/auth/ActivatePage';
 import ProjectList from './pages/manager/ProjectList';
 import ProjectDetail from './pages/manager/ProjectDetail';
 import DesignerProjects from './pages/designer/DesignerProjects';
+import ManagerDashboard from './pages/manager/ManagerDashboard';
+import DesignerDashboard from './pages/designer/DesignerDashboard';
+import ClientDashboard from './pages/client/ClientDashboard';
 
-// Temporary stub component — replaced with real pages in Sprint 3+
-const Stub = ({ label }: { label: string }) => (
-  <div style={{ padding: 40, fontFamily: 'sans-serif' }}>
-    <p style={{ color: '#6366f1', fontSize: 12 }}>Stub — Sprint 3</p>
-    <h2>{label}</h2>
-  </div>
-);
-
-// Root redirect — reads the current user's role and sends them to the right dashboard.
-// Unauthenticated users are sent to /login.
 function RootRedirect() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -27,47 +20,53 @@ function RootRedirect() {
   return <Navigate to="/login" replace />;
 }
 
+// Redirects already-authenticated users away from /login
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <>{children}</>;
+  if (user.role === 'Manager')  return <Navigate to="/manager"  replace />;
+  if (user.role === 'Designer') return <Navigate to="/designer" replace />;
+  if (user.role === 'Client')   return <Navigate to="/client"   replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
-    // AuthProvider must wrap BrowserRouter so useNavigate is available inside login()
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public routes — no token required */}
-          <Route path="/login"    element={<LoginPage />} />
+
+          {/* Public */}
+          <Route path="/login"    element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/activate" element={<ActivatePage />} />
-          <Route path="/manager/projects"     element={<ProjectList />} />
-          <Route path="/manager/projects/:id" element={<ProjectDetail />} />
-          <Route path="/designer/projects"    element={<DesignerProjects />} />
 
-          {/* Role-gated dashboards */}
+          {/* Manager */}
+          <Route path="/manager" element={<ProtectedRoute allowedRoles={['Manager']}><ManagerDashboard /></ProtectedRoute>} />
           <Route
-            path="/manager/*"
-            element={
-              <ProtectedRoute allowedRoles={['Manager']}>
-                <Stub label="Manager Dashboard" />
-              </ProtectedRoute>
-            }
+            path="/manager/projects"
+            element={<ProtectedRoute allowedRoles={['Manager']}><ProjectList /></ProtectedRoute>}
           />
           <Route
-            path="/designer/*"
-            element={
-              <ProtectedRoute allowedRoles={['Designer']}>
-                <Stub label="Designer Dashboard" />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/client/*"
-            element={
-              <ProtectedRoute allowedRoles={['Client']}>
-                <Stub label="Client Dashboard" />
-              </ProtectedRoute>
-            }
+            path="/manager/projects/:id"
+            element={<ProtectedRoute allowedRoles={['Manager']}><ProjectDetail /></ProtectedRoute>}
           />
 
-          {/* / → redirect to the user's own dashboard (or /login if unauthenticated) */}
+          {/* Designer */}
+          <Route path="/designer" element={<ProtectedRoute allowedRoles={['Designer']}><DesignerDashboard /></ProtectedRoute>} />
+          <Route
+            path="/designer/projects"
+            element={<ProtectedRoute allowedRoles={['Designer']}><DesignerProjects /></ProtectedRoute>}
+          />
+          <Route
+            path="/designer/projects/:id"
+            element={<ProtectedRoute allowedRoles={['Designer']}><ProjectDetail /></ProtectedRoute>}
+          />
+
+          {/* Client */}
+          <Route path="/client" element={<ProtectedRoute allowedRoles={['Client']}><ClientDashboard /></ProtectedRoute>} />
+
           <Route path="/" element={<RootRedirect />} />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

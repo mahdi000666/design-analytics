@@ -15,6 +15,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)   # already contains user_id, exp, iat
         token['email'] = user.email
         token['role']  = user.role
+        token['full_name'] = user.full_name
         return token
 
 

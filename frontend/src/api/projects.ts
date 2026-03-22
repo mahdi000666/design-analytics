@@ -34,3 +34,7 @@ export const assignDesigner = async (
 ): Promise<void> => {
   await apiClient.post(`/projects/${projectId}/assign/`, { designer_id: designerId });
 };
+
+export const removeDesigner = async (projectId: number, designerId: number): Promise<void> => {
+  await apiClient.delete(`/projects/${projectId}/assign/${designerId}/`);
+};

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAssignDesigner } from '../hooks/useProjects';
+import { useAssignDesigner, useRemoveDesigner } from '../hooks/useProjects';
 import apiClient from '../api/client';
 import type { Project } from '../types/project';
 
@@ -14,6 +14,7 @@ interface Props {
 
 const AssignDesignerPanel = ({ project }: Props) => {
   const assignDesigner = useAssignDesigner(project.id);
+  const removeDesigner = useRemoveDesigner(project.id);
 
   const { data: designers } = useQuery({
     queryKey: ['designers'],
@@ -24,10 +25,6 @@ const AssignDesignerPanel = ({ project }: Props) => {
   });
 
   const assignedIds = new Set(project.assignments.map(a => a.designer_id));
-
-  const handleAssign = (designerId: number) => {
-    assignDesigner.mutate(designerId);
-  };
 
   return (
     <div>
@@ -40,22 +37,30 @@ const AssignDesignerPanel = ({ project }: Props) => {
             {project.assignments.map(a => (
               <span
                 key={a.designer_id}
-                className="px-3 py-1 text-sm rounded-full bg-violet-100 text-violet-800"
+                className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-violet-100 text-violet-800"
               >
                 {a.designer_name}
+                <button
+                  onClick={() => removeDesigner.mutate(a.designer_id)}
+                  disabled={removeDesigner.isPending}
+                  className="ml-1 text-violet-400 hover:text-red-500 font-bold leading-none"
+                >
+                  ×
+                </button>
               </span>
             ))}
           </div>
         )
       }
 
+      {/* Unassigned designers — show as assignable buttons */}
       <div className="flex gap-2 flex-wrap">
         {designers
           ?.filter(d => !assignedIds.has(d.id))
           .map(d => (
             <button
               key={d.id}
-              onClick={() => handleAssign(d.id)}
+              onClick={() => assignDesigner.mutate(d.id)}
               disabled={assignDesigner.isPending}
               className="px-3 py-1 text-sm rounded border border-violet-300 text-violet-700 hover:bg-violet-50 disabled:opacity-50"
             >

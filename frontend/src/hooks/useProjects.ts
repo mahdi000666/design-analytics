@@ -39,3 +39,11 @@ export const useAssignDesigner = (projectId: number) => {
     onSuccess:  () => qc.invalidateQueries({ queryKey: ['projects', projectId] }),
   });
 };
+
+export const useRemoveDesigner = (projectId: number) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (designerId: number) => projectsApi.removeDesigner(projectId, designerId),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: ['projects', projectId] }),
+  });
+};

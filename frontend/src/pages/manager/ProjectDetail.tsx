@@ -1,18 +1,27 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useProject } from '../../hooks/useProjects';
+import { useProject, useUpdateProject, useDeleteProject } from '../../hooks/useProjects';
 import { useTasks, useCreateTask } from '../../hooks/useTasks';
+import { useAuth } from '../../hooks/useAuth';
 import TaskForm from '../../components/TaskForm';
 import TaskRow from '../../components/TaskRow';
 import AssignDesignerPanel from '../../components/AssignDesignerPanel';
 import type { TaskPayload } from '../../types/task';
+import type { Project } from '../../types/project';
 
 const ProjectDetail = () => {
-  const { id }      = useParams<{ id: string }>();
-  const projectId   = Number(id);
+  const { id }        = useParams<{ id: string }>();
+  const projectId     = Number(id);
+  const navigate      = useNavigate();
+  const { user }      = useAuth();
+  const isManager     = user?.role === 'Manager';
+
   const { data: project, isLoading: loadingProject } = useProject(projectId);
   const { data: tasks,   isLoading: loadingTasks   } = useTasks(projectId);
-  const createTask  = useCreateTask(projectId);
+  const createTask    = useCreateTask(projectId);
+  const updateProject = useUpdateProject(projectId);
+  const deleteProject = useDeleteProject();
+
   const [showTaskForm, setShowTaskForm] = useState(false);
 
   if (loadingProject) return <p className="p-6">Loading…</p>;
@@ -26,6 +35,13 @@ const ProjectDetail = () => {
     createTask.mutate(payload, { onSuccess: () => setShowTaskForm(false) });
   };
 
+  const handleDelete = () => {
+    if (!confirm('Delete this project? This cannot be undone.')) return;
+    deleteProject.mutate(project.id, {
+      onSuccess: () => navigate('/manager/projects'),
+    });
+  };
+
   return (
     <div className="p-6 space-y-8">
 
@@ -33,9 +49,42 @@ const ProjectDetail = () => {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{project.project_name}</h1>
-          <p className="text-gray-500 text-sm mt-1">{project.client_name} · {project.status}</p>
+          <p className="text-gray-500 text-sm mt-1">{project.client_name}</p>
         </div>
-        <span className="text-sm text-gray-400">{project.deadline ? `Due ${project.deadline}` : 'No deadline'}</span>
+
+        <div className="flex items-center gap-3">
+          {/* Status — manager can change inline; designer sees a plain badge */}
+          {isManager ? (
+            <select
+              value={project.status}
+              onChange={e =>
+                updateProject.mutate({ status: e.target.value as Project['status'] })
+              }
+              className="text-sm rounded border-gray-300 shadow-sm"
+            >
+              <option value="Active">Active</option>
+              <option value="Completed">Completed</option>
+              <option value="OnHold">On Hold</option>
+            </select>
+          ) : (
+            <span className="text-sm px-2 py-1 rounded-full bg-green-100 text-green-700">
+              {project.status}
+            </span>
+          )}
+
+          <span className="text-sm text-gray-400">
+            {project.deadline ? `Due ${project.deadline}` : 'No deadline'}
+          </span>
+
+          {isManager && (
+            <button
+              onClick={handleDelete}
+              className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Delete project
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Budget progress bar */}
@@ -47,29 +96,36 @@ const ProjectDetail = () => {
           </div>
           <div className="h-2 rounded-full bg-gray-200">
             <div
-              className={`h-2 rounded-full transition-all ${budgetPct >= 90 ? 'bg-red-500' : budgetPct >= 70 ? 'bg-yellow-400' : 'bg-green-500'}`}
+              className={`h-2 rounded-full transition-all ${
+                budgetPct >= 90 ? 'bg-red-500'
+                : budgetPct >= 70 ? 'bg-yellow-400'
+                : 'bg-green-500'
+              }`}
               style={{ width: `${budgetPct}%` }}
             />
           </div>
         </div>
       )}
 
-      {/* Assign Designers */}
-      <AssignDesignerPanel project={project} />
+      {/* Assign designers — manager only */}
+      {isManager && <AssignDesignerPanel project={project} />}
 
       {/* Tasks */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium">Tasks</h2>
-          <button
-            onClick={() => setShowTaskForm(v => !v)}
-            className="px-3 py-1.5 text-sm bg-gray-900 text-white rounded hover:bg-gray-700"
-          >
-            + Add task
-          </button>
+          {/* Only managers can create tasks */}
+          {isManager && (
+            <button
+              onClick={() => setShowTaskForm(v => !v)}
+              className="px-3 py-1.5 text-sm bg-gray-900 text-white rounded hover:bg-gray-700"
+            >
+              + Add task
+            </button>
+          )}
         </div>
 
-        {showTaskForm && (
+        {showTaskForm && isManager && (
           <div className="border rounded-lg p-4 mb-4 bg-white shadow-sm">
             <TaskForm
               projectId={projectId}
@@ -81,7 +137,14 @@ const ProjectDetail = () => {
 
         {loadingTasks
           ? <p className="text-gray-400 text-sm">Loading tasks…</p>
-          : tasks?.map(task => <TaskRow key={task.id} task={task} projectId={projectId} />)
+          : tasks?.map(task => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                projectId={projectId}
+                isManager={isManager}
+              />
+            ))
         }
       </div>
     </div>

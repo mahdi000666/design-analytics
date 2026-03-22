@@ -65,3 +65,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return Response({'detail': 'Designer assigned.'}, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['delete'], url_path='assign/(?P<designer_id>[^/.]+)')
+    def remove_designer(self, request, pk=None, designer_id=None):
+        project    = get_object_or_404(Project, pk=pk)
+        assignment = get_object_or_404(ProjectAssignment, project=project, designer_id=designer_id)
+        assignment.delete()
+        return Response({'detail': 'Designer removed.'}, status=status.HTTP_204_NO_CONTENT)

@@ -29,6 +29,7 @@ A web-based **project management + BI system** for a graphic design agency. Trac
 | Email | Django SMTP (Gmail App Password) |
 | PDF export | ReportLab |
 | Excel export | openpyxl |
+| AI inference | Groq API (`llama-3.3-70b-versatile`) |
 | Deployment | Render (Web Service + Static Site + PostgreSQL) |
 
 ---
@@ -47,7 +48,7 @@ design-analytics/
 │       ├── feedback/       # Feedback
 │       ├── files/          # FileUpload
 │       ├── messages/       # Message
-│       └── analytics/      # No models — aggregate query views only
+│       └── analytics/      # No models — aggregate query views + AI endpoints
 └── frontend/src/
     ├── api/                # Axios instance + per-resource typed functions
     ├── components/         # ui/ (Button, Card, Modal…) + feature components
@@ -80,6 +81,8 @@ design-analytics/
 | Send messages | ✅ | ✅ | ✅ |
 | Generate & export reports | ✅ | ❌ | ❌ |
 | Create user accounts | ✅ | ❌ | ❌ |
+| AI task hour estimation | ✅ | ❌ | ❌ |
+| AI project health narrative | ✅ | ❌ | ❌ |
 
 ---
 
@@ -109,7 +112,8 @@ design-analytics/
 
 **FileUpload** — `file_id`, `project_id`, `uploaded_by` FK→User, `file_type` ENUM('Deliverable','Reference','Brand_Guideline'), `file_name`, `file_path`, `file_size` int, `uploaded_at`
 
-> ⚠️ There is **no Revision model**. Revisions are `Feedback` records with `category='Revision'`.
+> ⚠️ There is **no Revision model**. Revisions are `Feedback` records with `category='Revision'`.  
+> ⚠️ The AI features introduce **no new models** — they are stateless views that call the Groq API at request time.
 
 ---
 
@@ -185,6 +189,10 @@ GET    /api/analytics/designer-utilization/
 GET    /api/analytics/scope-creep/
 GET    /api/analytics/kpi-summary/       KPI cards data
 
+# AI — see AI Features section below
+POST   /api/tasks/estimate-hours/       Manager only — body: { task_name, description, project_id }
+GET    /api/analytics/ai-summary/?project={id}   Manager only
+
 # Reports — Manager only
 GET    /api/reports/export/?format=pdf&project={id}
 GET    /api/reports/export/?format=excel&project={id}
@@ -230,6 +238,82 @@ All computed server-side via PostgreSQL aggregations. No stored calculated field
 
 ---
 
+## AI Features
+
+> AI inference is handled server-side via the **Groq API** (`llama-3.3-70b-versatile` model) using
+> the `groq` Python library. The key is stored in `.env` as `GROQ_API_KEY` and loaded via `settings.py`.
+
+---
+
+### Option A — AI Task Hour Estimator
+
+**Implemented:** Sprint 2  
+**Endpoint:** `POST /api/tasks/estimate-hours/`  
+**Access:** Manager only
+
+**What it does:**  
+When creating a task, the user can request an AI-suggested `estimated_hours` value. The backend queries the database for past time logs on similar tasks within the same project, then sends that historical context along with the new task's name and description to the LLM. The model returns a suggested hour estimate with a brief justification.
+
+**Why AI is justified here:**  
+A static lookup table (e.g. "logo = 6h") would produce generic estimates with no awareness of this agency's actual pace or project complexity. By passing real historical `TimeLog` records as context, the model performs retrieval-augmented reasoning over project-specific data — something a hardcoded rule cannot do. The estimate improves naturally as more time logs accumulate.
+
+**Request body:**
+```json
+{
+  "task_name": "Design homepage hero section",
+  "description": "Full-width banner with animation, mobile responsive",
+}
+```
+
+**Response:**
+```json
+{
+  "suggested_hours": 6.5,
+  "reasoning": "Based on 3 similar UI design tasks in this project averaging 6.2 hours, and accounting for the animation requirement, 6.5 hours is a reasonable estimate."
+}
+```
+
+**Context passed to LLM:**  
+Up to 10 most recent `TimeLog` records from the same project, filtered by keyword match on
+`task__task_name`. Each record includes `task_name`, `estimated_hours`, and `hours_spent`.
+
+---
+
+### Option B — AI Project Health Narrative
+
+**Implemented:** Sprint 5  
+**Endpoint:** `GET /api/analytics/ai-summary/?project={id}`  
+**Access:** Manager only
+
+**What it does:**  
+After the analytics engine computes all BI metrics for a project, those figures are passed to the
+LLM which synthesises them into a 3–4 sentence plain-English health summary. The summary flags
+risks and suggests one concrete action for the manager. It is displayed as a card on the manager's
+project detail page, alongside the existing charts.
+
+**Why AI is justified here:**  
+Synthesising multiple metrics (budget utilisation, EHR vs target, scope creep index,
+revision-to-approval ratio, days remaining) into a coherent narrative with contextual judgment
+is genuinely non-trivial for a rule-based system. A rules engine would require exhaustive
+branching logic and still produce rigid, template-like text. The LLM produces nuanced,
+context-aware prose that adapts to the specific combination of metric values.
+
+**Response:**
+```json
+{
+  "summary": "This project is consuming budget faster than planned, with utilisation at 87% while only 65% of tasks are complete. The scope creep index of 34% suggests significant unplanned work has been added since kickoff, which is likely driving the overrun. The revision-to-approval ratio of 3:1 indicates ongoing client friction that may further extend timelines. Recommend a scope review meeting with the client before logging additional unplanned tasks."
+}
+```
+
+**Metrics passed to LLM:**
+- Budget utilisation %
+- Effective Hourly Rate vs target rate
+- Scope creep index %
+- Revision-to-approval ratio
+- Days until deadline
+
+---
+
 ## Sprint Plan
 
 6 × 2-week sprints. Update the checkbox as you progress. Estimation in person-days; total: 85.
@@ -237,19 +321,19 @@ All computed server-side via PostgreSQL aggregations. No stored calculated field
 | Sprint | Weeks | Goal | Days |
 |--------|-------|------|------|
 | **S1** | 1–2 | Foundation & Auth: scaffold Django + React, all models migrated, JWT login, invitation flow, user management | 16 |
-| S2 | 3–4 | Project & Task Management: project/task CRUD, designer assignment, role-scoped views | 19 |
+| S2 | 3–4 | Project & Task Management: project/task CRUD, designer assignment, role-scoped views + **AI Task Estimator** | 19 |
 | S3 | 5–6 | Time Tracking & Deliverables: time logging, task status, file uploads, view client feedback | 13 |
 | S4 | 7–8 | Client Portal & Feedback: client portal, feedback submission & replies, resolution, messaging | 19 |
-| S5 | 9–10 | BI Dashboards: KPI cards, budget vs actual, EHR, client profitability, scope creep | 8 |
+| S5 | 9–10 | BI Dashboards: KPI cards, budget vs actual, EHR, client profitability, scope creep + **AI Health Narrative** | 8 |
 | S6 | 11–12 | Reports, Export & Deployment: report generation, PDF/Excel export, tests, Render deploy, README | 10 |
 
 **Per-sprint risks:**
 - **S1:** Model mistakes cascade — validate every field against ERD before first migration; test Gmail SMTP on day 1
-- **S2:** RBAC queryset filtering must be correct before building client-facing views
+- **S2:** RBAC queryset filtering must be correct before building client-facing views; implement AI estimator only after task CRUD is solid
 - **S3:** File upload storage — plan Cloudinary/S3 early; Render disk is ephemeral
 - **S4:** Keep messaging UI simple for MVP; scope creep risk is high for this sprint
-- **S5:** Add DB indexes before writing aggregate queries
-- **S6:** ReportLab (PDF) is fiddly — prioritise it over Excel
+- **S5:** Add DB indexes before writing aggregate queries; AI health narrative depends on all analytics endpoints being complete first
+- **S6:** ReportLab (PDF) is fiddly — prioritise it over Excel; add `GROQ_API_KEY` to Render environment variables before deploying
 
 ---
 

@@ -10,6 +10,9 @@ from .models import Task
 from .serializers import TaskReadSerializer, TaskWriteSerializer
 from apps.users.permissions import IsManager, IsManagerOrDesigner
 
+from django.db.models import Avg
+from apps.timelog.models import TimeLog
+
 
 class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -75,14 +78,31 @@ If the description is too vague to estimate, return:
 def estimate_task_hours(request):
     task_name   = request.data.get('task_name', '').strip()
     description = request.data.get('description', '').strip()
+    project_id  = request.data.get('project_id')
 
     if not task_name:
-        return Response(
-            {'detail': 'task_name is required.'},
-            status=status.HTTP_400_BAD_REQUEST,
+        return Response({'detail': 'task_name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Fetch historical context from the same project
+    historical = ''
+    if project_id:
+        logs = (
+            TimeLog.objects
+            .filter(task__project_id=project_id)
+            .select_related('task')
+            .values('task__task_name', 'task__estimated_hours', 'hours_spent')
+            .order_by('-created_at')[:10]
         )
+        if logs:
+            lines = [
+                f"- \"{l['task__task_name']}\": estimated {l['task__estimated_hours']}h, actual {l['hours_spent']}h"
+                for l in logs
+            ]
+            historical = '\n'.join(lines)
 
     user_message = f"Task: {task_name}\nDescription: {description or 'No description provided.'}"
+    if historical:
+        user_message += f"\n\nRecent tasks on this project for context:\n{historical}"
 
     try:
         chat = _groq_client.chat.completions.create(
