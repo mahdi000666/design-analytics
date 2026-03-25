@@ -1,12 +1,3 @@
-Carefully read the writing guide PDF then carefully analyse the report starting from Chapter 3 (S0) until Chapter 5 (S2).
-1.Check if the report respects and is consistent with the writing guide.
-2.Check for typos
-3.Check if the report suggests a missing or unfinished part that will be retouched in the future.
-
-In any case, you may generate the corrected parts and I will paste it.
-
-
-Add test section
 Django SS in S1
 Email Invitation SCREENSHOTS
 
