@@ -1,10 +1,4 @@
-Django SS in S1
-Email Invitation SCREENSHOTS
-
-ASK ABOUT SCRUM BOARD AND BURNDOWN RELATION AND REALISTIC
-
 Check subtasks
-
 
 Use the exact style of this report:
 A4 portrait, Times New Roman body text at 12 pt, justified, 1.5 line spacing, with about 6 pt paragraph spacing before and after.
