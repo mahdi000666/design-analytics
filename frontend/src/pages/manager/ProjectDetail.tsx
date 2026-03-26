@@ -42,6 +42,10 @@ const ProjectDetail = () => {
     });
   };
 
+  // Only top-level tasks can be parents — subtasks cannot themselves have children.
+  // tasks is already filtered to parent_task=null by the backend queryset.
+  const parentTaskOptions = tasks?.map(t => ({ id: t.id, task_name: t.task_name })) ?? [];
+
   return (
     <div className="p-6 space-y-8">
 
@@ -53,7 +57,6 @@ const ProjectDetail = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Status — manager can change inline; designer sees a plain badge */}
           {isManager ? (
             <select
               value={project.status}
@@ -114,13 +117,12 @@ const ProjectDetail = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium">Tasks</h2>
-          {/* Only managers can create tasks */}
           {isManager && (
             <button
               onClick={() => setShowTaskForm(v => !v)}
               className="px-3 py-1.5 text-sm bg-gray-900 text-white rounded hover:bg-gray-700"
             >
-              + Add task
+              {showTaskForm ? 'Cancel' : '+ Add task'}
             </button>
           )}
         </div>
@@ -131,6 +133,9 @@ const ProjectDetail = () => {
               projectId={projectId}
               onSubmit={handleCreateTask}
               isLoading={createTask.isPending}
+              // Passes existing top-level tasks so the manager can optionally
+              // create a task already nested under an existing one.
+              parentTaskOptions={parentTaskOptions}
             />
           </div>
         )}

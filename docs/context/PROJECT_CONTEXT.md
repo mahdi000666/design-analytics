@@ -1,6 +1,6 @@
 # Project Context — Design Project Profitability Analytics System
 
-> This file is the fast-read primer. For full Django model code see DATA_MODEL.md. For workflow patterns see DEVELOPMENT.md.
+> This file is the fast-read primer. For full Django model code see DATA_MODEL.md. For Code conventions and sprint checklists see DEVELOPMENT.md.
 
 ---
 
@@ -83,37 +83,6 @@ design-analytics/
 | Create user accounts | ✅ | ❌ | ❌ |
 | AI task hour estimation | ✅ | ❌ | ❌ |
 | AI project health narrative | ✅ | ❌ | ❌ |
-
----
-
-## Data Model (field-level reference)
-
-> Full Django model code with key rules is in DATA_MODEL.md.
-
-**User** — `user_id`, `email` (unique), `password_hash`, `full_name`, `role` ENUM('Manager','Designer','Client'), `is_active` (false until invitation accepted), `created_at`
-
-**Designer** *(1:1 → User)* — `designer_id`, `user_id`, `hourly_rate` decimal, `specialization` varchar(50), `available_hours_per_week` int
-
-**Client** *(1:1 → User)* — `client_id`, `user_id`, `phone` varchar(20), `industry` varchar(100)
-
-**InvitationToken** — `token_id`, `user_id`, `token` varchar(255) unique, `expires_at`, `is_used` bool
-
-**Project** — `project_id`, `client_id` FK→Client, `project_name`, `description`, `budget_hours` decimal, `budget_amount` decimal, `deadline` date, `status` ENUM('Active','Completed','OnHold'), `category` varchar, `created_at`, `updated_at`
-
-**ProjectAssignment** *(Project ↔ Designer M2M)* — `assignment_id`, `project_id`, `designer_id`, `assigned_at`
-
-**Task** — `task_id`, `project_id`, `parent_task_id` FK→self (nullable, for subtasks), `task_name`, `description`, `estimated_hours` decimal, `status` ENUM('Todo','InProgress','Completed'), `is_unplanned` bool (⚠️ `true` = scope creep), `created_at`
-
-**TimeLog** — `log_id`, `task_id`, `designer_id` FK→Designer, `hours_spent` decimal, `description`, `created_at`
-
-**Feedback** — `feedback_id`, `project_id`, `category` ENUM('Revision','Approval','Question'), `content_text` text, `status` ENUM('Pending','InProgress','Resolved'), `submitted_at`, `resolved_at` (nullable)
-
-**Message** — `message_id`, `project_id`, `sender_id` FK→User, `content_text`, `is_read` bool, `created_at`
-
-**FileUpload** — `file_id`, `project_id`, `uploaded_by` FK→User, `file_type` ENUM('Deliverable','Reference','Brand_Guideline'), `file_name`, `file_path`, `file_size` int, `uploaded_at`
-
-> ⚠️ There is **no Revision model**. Revisions are `Feedback` records with `category='Revision'`.  
-> ⚠️ The AI features introduce **no new models** — they are stateless views that call the Groq API at request time.
 
 ---
 
@@ -261,7 +230,7 @@ A static lookup table (e.g. "logo = 6h") would produce generic estimates with no
 ```json
 {
   "task_name": "Design homepage hero section",
-  "description": "Full-width banner with animation, mobile responsive",
+  "description": "Full-width banner with animation, mobile responsive"
 }
 ```
 
@@ -316,7 +285,7 @@ context-aware prose that adapts to the specific combination of metric values.
 
 ## Sprint Plan
 
-6 × 2-week sprints. Update the checkbox as you progress. Estimation in person-days; total: 85.
+6 × 2-week sprints. Estimation in person-days; total: 85.
 
 | Sprint | Weeks | Goal | Days |
 |--------|-------|------|------|

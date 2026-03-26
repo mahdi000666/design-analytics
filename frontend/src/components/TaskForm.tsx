@@ -5,6 +5,12 @@ import { z } from 'zod';
 import { estimateTaskHours } from '../api/tasks';
 import type { Task, TaskPayload } from '../types/task';
 
+// Exported so TaskRow can reuse the shape without importing Task wholesale.
+export interface ParentTaskOption {
+  id:        number;
+  task_name: string;
+}
+
 const schema = z.object({
   task_name:       z.string().min(1, 'Task name is required'),
   description:     z.string().optional(),
@@ -17,13 +23,16 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 interface Props {
-  projectId:  number;
-  onSubmit:   (payload: TaskPayload) => void;
-  isLoading:  boolean;
-  defaults?:  Partial<Task>;
+  projectId:          number;
+  onSubmit:           (payload: TaskPayload) => void;
+  isLoading:          boolean;
+  defaults?:          Partial<Task>;
+  // When provided and non-empty, renders a "Parent task" select.
+  // Omit (or pass empty) when the parent is already known (subtask creation).
+  parentTaskOptions?: ParentTaskOption[];
 }
 
-const TaskForm = ({ projectId, onSubmit, isLoading, defaults }: Props) => {
+const TaskForm = ({ projectId, onSubmit, isLoading, defaults, parentTaskOptions }: Props) => {
   const isEdit = defaults !== undefined;
 
   const [estimating,  setEstimating]  = useState(false);
@@ -40,13 +49,13 @@ const TaskForm = ({ projectId, onSubmit, isLoading, defaults }: Props) => {
           ? String(defaults.estimated_hours)
           : '',
         status:          defaults?.status           ?? 'Todo',
+        // Pre-fill parent_task when supplied via defaults (e.g. subtask creation).
         parent_task:     defaults?.parent_task != null
           ? String(defaults.parent_task)
           : '',
       },
     });
 
-  // Read form values at click time — no reactive subscription needed.
   const handleEstimate = async () => {
     const { task_name, description } = getValues();
     if (!task_name) return;
@@ -74,8 +83,36 @@ const TaskForm = ({ projectId, onSubmit, isLoading, defaults }: Props) => {
     });
   };
 
+  const showParentSelect = parentTaskOptions && parentTaskOptions.length > 0;
+
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-4">
+
+      {/*
+        parent_task is always registered so its value (whether pre-filled from
+        defaults or chosen via the select below) is included in the submission.
+        The hidden input is the fallback; the visible select replaces it when
+        parentTaskOptions are available.
+      */}
+      {showParentSelect ? (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Parent task <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <select
+            {...register('parent_task')}
+            className="mt-1 block w-full rounded border-gray-300 shadow-sm"
+          >
+            <option value="">— None (top-level task) —</option>
+            {parentTaskOptions.map(t => (
+              <option key={t.id} value={t.id}>{t.task_name}</option>
+            ))}
+          </select>
+        </div>
+      ) : (
+        // Hidden — carries the pre-filled value when parent is already known.
+        <input type="hidden" {...register('parent_task')} />
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Task name</label>

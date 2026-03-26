@@ -20,8 +20,6 @@ class TaskViewSet(viewsets.ModelViewSet):
         user       = self.request.user
         project_id = self.request.query_params.get('project')
 
-        # Base queryset — scoped by role so designers can't see tasks for
-        # projects they're not assigned to.
         if user.role == 'Manager':
             qs = Task.objects.select_related('project').prefetch_related('subtasks')
         elif user.role == 'Designer':
@@ -34,8 +32,12 @@ class TaskViewSet(viewsets.ModelViewSet):
         if project_id:
             qs = qs.filter(project_id=project_id)
 
-        # Return only top-level tasks — subtasks come via the nested serializer.
-        return qs.filter(parent_task__isnull=True)
+        # Restrict to top-level tasks on list only — detail/update/delete actions
+        # must be able to resolve subtask ids, so the filter must not apply there.
+        if self.action == 'list':
+            qs = qs.filter(parent_task__isnull=True)
+
+        return qs
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
@@ -51,9 +53,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 
 # ---------------------------------------------------------------------------
-# AI Hour Estimator — separate function-based view, not part of the ViewSet.
-# Kept isolated so it can be called independently from the task creation form
-# without the task existing yet.
+# AI Hour Estimator
 # ---------------------------------------------------------------------------
 
 _groq_client = Groq(api_key=os.getenv('GROQ_API_KEY', ''))
@@ -82,7 +82,6 @@ def estimate_task_hours(request):
     if not task_name:
         return Response({'detail': 'task_name is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Fetch historical context from the same project
     historical = ''
     if project_id:
         logs = (
@@ -110,21 +109,18 @@ def estimate_task_hours(request):
                 {'role': 'system', 'content': ESTIMATOR_SYSTEM_PROMPT},
                 {'role': 'user',   'content': user_message},
             ],
-            temperature=0.2,   # Low — we want consistent, not creative, estimates.
+            temperature=0.2,
             max_tokens=100,
         )
         raw    = chat.choices[0].message.content.strip()
         result = json.loads(raw)
 
-        # Validate the shape before passing it to the client.
         if 'estimated_hours' not in result or 'reasoning' not in result:
             raise ValueError('Unexpected response shape')
 
     except (json.JSONDecodeError, ValueError):
-        # Malformed JSON from the model — degrade gracefully.
         return Response({'estimated_hours': None, 'reasoning': 'AI returned an unexpected response.'})
     except Exception:
-        # Groq is down, rate-limited, etc.
         return Response({'estimated_hours': None, 'reasoning': 'AI service unavailable.'})
 
     return Response(result)
