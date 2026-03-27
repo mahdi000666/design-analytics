@@ -9,6 +9,7 @@ import DesignerProjects from './pages/designer/DesignerProjects';
 import ManagerDashboard from './pages/manager/ManagerDashboard';
 import DesignerDashboard from './pages/designer/DesignerDashboard';
 import ClientDashboard from './pages/client/ClientDashboard';
+import DesignerProjectDetail from './pages/designer/DesignerProjectDetail';
 
 function RootRedirect() {
   const { user } = useAuth();
@@ -57,7 +58,7 @@ export default function App() {
           />
           <Route
             path="/designer/projects/:id"
-            element={<ProtectedRoute allowedRoles={['Designer']}><ProjectDetail /></ProtectedRoute>}
+            element={<ProtectedRoute allowedRoles={['Designer']}><DesignerProjectDetail /></ProtectedRoute>}
           />
 
           {/* Client */}

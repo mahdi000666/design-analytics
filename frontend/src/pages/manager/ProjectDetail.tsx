@@ -2,10 +2,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useProject, useUpdateProject, useDeleteProject } from '../../hooks/useProjects';
 import { useTasks, useCreateTask } from '../../hooks/useTasks';
+import { useTimeLogs, useDeleteTimeLog } from '../../hooks/useTimeLogs';
 import { useAuth } from '../../hooks/useAuth';
 import TaskForm from '../../components/TaskForm';
 import TaskRow from '../../components/TaskRow';
 import AssignDesignerPanel from '../../components/AssignDesignerPanel';
+import TimeLogList from '../../components/TimeLogList';
+import FileUploadPanel from '../../components/FileUploadPanel';
+import FeedbackList from '../../components/FeedbackList';
 import type { TaskPayload } from '../../types/task';
 import type { Project } from '../../types/project';
 
@@ -18,9 +22,11 @@ const ProjectDetail = () => {
 
   const { data: project, isLoading: loadingProject } = useProject(projectId);
   const { data: tasks,   isLoading: loadingTasks   } = useTasks(projectId);
+  const { data: logs = []                           } = useTimeLogs(projectId);
   const createTask    = useCreateTask(projectId);
   const updateProject = useUpdateProject(projectId);
   const deleteProject = useDeleteProject();
+  const deleteTimeLog = useDeleteTimeLog(projectId);
 
   const [showTaskForm, setShowTaskForm] = useState(false);
 
@@ -42,8 +48,6 @@ const ProjectDetail = () => {
     });
   };
 
-  // Only top-level tasks can be parents — subtasks cannot themselves have children.
-  // tasks is already filtered to parent_task=null by the backend queryset.
   const parentTaskOptions = tasks?.map(t => ({ id: t.id, task_name: t.task_name })) ?? [];
 
   return (
@@ -110,7 +114,7 @@ const ProjectDetail = () => {
         </div>
       )}
 
-      {/* Assign designers — manager only */}
+      {/* Assign designers */}
       {isManager && <AssignDesignerPanel project={project} />}
 
       {/* Tasks */}
@@ -133,8 +137,6 @@ const ProjectDetail = () => {
               projectId={projectId}
               onSubmit={handleCreateTask}
               isLoading={createTask.isPending}
-              // Passes existing top-level tasks so the manager can optionally
-              // create a task already nested under an existing one.
               parentTaskOptions={parentTaskOptions}
             />
           </div>
@@ -152,6 +154,33 @@ const ProjectDetail = () => {
             ))
         }
       </div>
+
+      {/* Time logs */}
+      <div>
+        <h2 className="text-lg font-medium mb-4">Time logs</h2>
+        <TimeLogList
+          logs={logs}
+          isManager={isManager}
+          onDelete={id => deleteTimeLog.mutate(id)}
+        />
+      </div>
+
+      {/* Files */}
+      <div>
+        <h2 className="text-lg font-medium mb-4">Files</h2>
+        <FileUploadPanel
+          projectId={projectId}
+          role={user?.role ?? 'Manager'}
+          isManager={isManager}
+        />
+      </div>
+
+      {/* Feedback */}
+      <div>
+        <h2 className="text-lg font-medium mb-4">Client feedback</h2>
+        <FeedbackList projectId={projectId} canUpdate={true} />
+      </div>
+
     </div>
   );
 };
