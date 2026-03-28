@@ -37,6 +37,10 @@ const DesignerProjectDetail = () => {
 
   const [showLogForm, setShowLogForm] = useState(false);
 
+  // Flatten top-level tasks + their subtasks for the time log form — a
+  // designer can log time against any task or subtask.
+  const allTasks = tasks.flatMap(t => [t, ...t.subtasks]);
+
   const handleStatusCycle = (task: Task) => {
     updateTask.mutate({
       id:      task.id,
@@ -102,38 +106,70 @@ const DesignerProjectDetail = () => {
         ) : (
           <ul className="space-y-2">
             {tasks.map(task => (
-              <li
-                key={task.id}
-                className="flex items-center justify-between border rounded-lg px-4 py-3 bg-white shadow-sm"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-sm">{task.task_name}</span>
-                    {task.is_unplanned && (
-                      <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">
-                        Unplanned
-                      </span>
-                    )}
-                    {task.estimated_hours && (
-                      <span className="text-xs text-gray-400">
-                        Est. {task.estimated_hours}h
-                      </span>
+              <li key={task.id} className="border rounded-lg bg-white shadow-sm">
+
+                {/* Parent task row */}
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-sm">{task.task_name}</span>
+                      {task.is_unplanned && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">
+                          Unplanned
+                        </span>
+                      )}
+                      {task.estimated_hours && (
+                        <span className="text-xs text-gray-400">Est. {task.estimated_hours}h</span>
+                      )}
+                    </div>
+                    {task.description && (
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">{task.description}</p>
                     )}
                   </div>
-                  {task.description && (
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">{task.description}</p>
-                  )}
+                  <button
+                    onClick={() => handleStatusCycle(task)}
+                    disabled={updateTask.isPending}
+                    className={`ml-4 flex-shrink-0 text-xs px-2 py-1 rounded-full font-medium transition-opacity hover:opacity-70 disabled:opacity-40 ${STATUS_STYLES[task.status]}`}
+                    title="Click to advance status"
+                  >
+                    {task.status}
+                  </button>
                 </div>
 
-                {/* Clicking the status badge cycles it to the next state */}
-                <button
-                  onClick={() => handleStatusCycle(task)}
-                  disabled={updateTask.isPending}
-                  className={`ml-4 flex-shrink-0 text-xs px-2 py-1 rounded-full font-medium transition-opacity hover:opacity-70 disabled:opacity-40 ${STATUS_STYLES[task.status]}`}
-                  title="Click to advance status"
-                >
-                  {task.status}
-                </button>
+                {/* Subtasks — indented, same status-cycle interaction */}
+                {task.subtasks.length > 0 && (
+                  <ul className="border-t divide-y divide-gray-100">
+                    {task.subtasks.map(sub => (
+                      <li key={sub.id} className="flex items-center justify-between pl-8 pr-4 py-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm text-gray-700">{sub.task_name}</span>
+                            {sub.is_unplanned && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">
+                                Unplanned
+                              </span>
+                            )}
+                            {sub.estimated_hours && (
+                              <span className="text-xs text-gray-400">Est. {sub.estimated_hours}h</span>
+                            )}
+                          </div>
+                          {sub.description && (
+                            <p className="text-xs text-gray-500 mt-0.5 truncate">{sub.description}</p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleStatusCycle(sub)}
+                          disabled={updateTask.isPending}
+                          className={`ml-4 flex-shrink-0 text-xs px-2 py-1 rounded-full font-medium transition-opacity hover:opacity-70 disabled:opacity-40 ${STATUS_STYLES[sub.status]}`}
+                          title="Click to advance status"
+                        >
+                          {sub.status}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
               </li>
             ))}
           </ul>
@@ -156,7 +192,7 @@ const DesignerProjectDetail = () => {
           <div className="border rounded-lg p-4 mb-4 bg-white shadow-sm">
             {/* Pass all tasks (including subtasks) as targets for time logging */}
             <TimeLogForm
-              tasks={tasks}
+              tasks={allTasks}
               isLoading={createTimeLog.isPending}
               onSubmit={handleLogTime}
             />

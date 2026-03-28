@@ -7,7 +7,7 @@ export interface TimeLog {
   readonly created_at:    string;
   task:        number;
   designer:    number;
-  hours_spent: number;
+  hours_spent: number | string;  // DRF serializes DecimalField as string
   description: string;
 }
 

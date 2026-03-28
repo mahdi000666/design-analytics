@@ -11,7 +11,7 @@ const TimeLogList = ({ logs, isManager, onDelete }: Props) => {
     return <p className="text-sm text-gray-400">No time logged yet.</p>;
   }
 
-  const total = logs.reduce((sum, l) => sum + l.hours_spent, 0);
+  const total = logs.reduce((sum, l) => sum + Number(l.hours_spent), 0);
 
   return (
     <div className="overflow-x-auto">
