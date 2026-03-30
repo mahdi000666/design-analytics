@@ -1,8 +1,5 @@
 # DesignOps: Design Project Profitability Analytics System
 
-Final year project — a web-based project management and Business Intelligence system
-for graphic design agencies, built with Django + React/TypeScript.
-
 ## Tech Stack
 - **Backend:** Python 3.12, Django 5, Django REST Framework, PostgreSQL 16
 - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Recharts

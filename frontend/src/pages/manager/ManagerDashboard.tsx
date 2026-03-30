@@ -1,44 +1,60 @@
-import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import AppShell from '../../components/AppShell';
 
-const ManagerDashboard = () => {
-  const { user, logout } = useAuth();
+// KPI cards are shown as placeholders here; Sprint 5 will wire in real data.
+const KPI_PLACEHOLDERS = [
+  { label: 'Active Projects',  value: '—' },
+  { label: 'Total Revenue',    value: '—' },
+  { label: 'Avg. EHR',         value: '—' },
+  { label: 'Pending Feedback', value: '—' },
+];
+
+export default function ManagerDashboard() {
+  const { user } = useAuth();
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Manager Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Welcome back, {user?.full_name}</p>
-        </div>
-        <button
-          onClick={logout}
-          className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-        >
-          Log out
-        </button>
+    <AppShell title="Dashboard">
+      {/* Welcome */}
+      <div className="mb-7">
+        <h3 className="font-serif text-[17px] font-normal text-ink">
+          Welcome back, {user?.full_name}
+        </h3>
+        <p className="font-sans text-[13px] text-ink3 mt-1">
+          Here's an overview of your agency today.
+        </p>
       </div>
 
-      {/* Navigation cards — expand in Sprint 5 with real KPI data */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* KPI cards — 4 columns */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {KPI_PLACEHOLDERS.map(kpi => (
+          <div key={kpi.label} className="bg-surface border border-border rounded-lg p-5">
+            <div className="font-sans text-[11px] uppercase tracking-[0.6px] text-ink3 mb-2">
+              {kpi.label}
+            </div>
+            <div className="font-serif text-[30px] leading-none text-ink">{kpi.value}</div>
+            <div className="font-sans text-[11px] mt-[6px] text-ink3">Available in Sprint 5</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation cards */}
+      <div className="grid grid-cols-2 gap-4">
         <Link
           to="/manager/projects"
-          className="block border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
+          className="bg-surface border border-border rounded-lg p-6 hover:border-amber/60 hover:shadow-sm transition-all group"
         >
-          <h2 className="font-medium text-gray-900">Projects</h2>
-          <p className="text-sm text-gray-500 mt-1">View and manage all projects</p>
+          <div className="font-sans text-[14px] text-ink3 mb-2 group-hover:text-amber transition-colors">▣</div>
+          <div className="font-serif text-[17px] font-normal text-ink">Projects</div>
+          <p className="font-sans text-[13px] text-ink3 mt-1">View and manage all client projects</p>
         </Link>
 
-        <Link
-          to="/manager/analytics"
-          className="block border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow opacity-50 cursor-not-allowed pointer-events-none"
-        >
-          <h2 className="font-medium text-gray-900">Analytics</h2>
-          <p className="text-sm text-gray-500 mt-1">Available in Sprint 5</p>
-        </Link>
+        <div className="bg-surface border border-border rounded-lg p-6 opacity-40 cursor-not-allowed select-none">
+          <div className="font-sans text-[14px] text-ink3 mb-2">∑</div>
+          <div className="font-serif text-[17px] font-normal text-ink">Analytics</div>
+          <p className="font-sans text-[13px] text-ink3 mt-1">BI dashboards — available in Sprint 5</p>
+        </div>
       </div>
-    </div>
+    </AppShell>
   );
-};
-
-export default ManagerDashboard;
+}

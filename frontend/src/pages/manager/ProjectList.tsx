@@ -2,15 +2,20 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useProjects, useCreateProject } from '../../hooks/useProjects';
 import ProjectForm from '../../components/ProjectForm';
+import AppShell from '../../components/AppShell';
 import type { ProjectPayload } from '../../types/project';
 
-const statusColour: Record<string, string> = {
-  Active:    'bg-green-100 text-green-800',
-  Completed: 'bg-gray-100 text-gray-600',
-  OnHold:    'bg-yellow-100 text-yellow-800',
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const STATUS_BADGE: Record<string, string> = {
+  Active:    'bg-success-light text-success',
+  Completed: 'bg-surface2 text-ink3',
+  OnHold:    'bg-amber-light text-amber-dark',
 };
 
-const ProjectList = () => {
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export default function ProjectList() {
   const { data: projects, isLoading } = useProjects();
   const createProject = useCreateProject();
   const [showForm, setShowForm] = useState(false);
@@ -19,60 +24,84 @@ const ProjectList = () => {
     createProject.mutate(payload, { onSuccess: () => setShowForm(false) });
   };
 
-  if (isLoading) return <p className="p-6">Loading projects…</p>;
-
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Projects</h1>
+    <AppShell
+      title="Projects"
+      actions={
         <button
-          onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-700"
+          onClick={() => setShowForm(v => !v)}
+          className="px-[14px] py-[6px] rounded bg-ink text-white font-sans text-[12px] font-medium border border-ink hover:bg-[#333] transition-colors"
         >
-          + New project
+          {showForm ? 'Cancel' : '+ New project'}
         </button>
-      </div>
-
+      }
+    >
+      {/* Inline create form */}
       {showForm && (
-        <div className="border rounded-lg p-6 bg-white shadow-sm">
-          <h2 className="text-lg font-medium mb-4">Create project</h2>
+        <div className="bg-surface border border-border rounded-lg p-5 mb-6">
+          <h3 className="font-serif text-[17px] font-normal text-ink mb-4">Create project</h3>
           <ProjectForm onSubmit={handleCreate} isLoading={createProject.isPending} />
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              {['Project', 'Client', 'Status', 'Budget hrs', 'Actual hrs', 'Deadline'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {projects?.map(p => (
-              <tr key={p.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <Link to={`/manager/projects/${p.id}`} className="font-medium text-violet-700 hover:underline">
-                    {p.project_name}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-gray-600">{p.client_name}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColour[p.status]}`}>
-                    {p.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-600">{p.budget_hours ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-600">{p.actual_hours}</td>
-                <td className="px-4 py-3 text-gray-600">{p.deadline ?? '—'}</td>
+      {/* Table */}
+      {isLoading ? (
+        <p className="font-sans text-[13px] text-ink3">Loading projects…</p>
+      ) : (
+        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-surface2">
+                {['Project', 'Client', 'Status', 'Budget hrs', 'Actual hrs', 'Deadline'].map(h => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left font-sans text-[11px] font-semibold uppercase tracking-[0.5px] text-ink3"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            </thead>
+            <tbody>
+              {projects?.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center font-sans text-[13px] text-ink3">
+                    No projects yet. Create one above.
+                  </td>
+                </tr>
+              )}
+              {projects?.map(p => (
+                <tr
+                  key={p.id}
+                  className="border-b border-border last:border-b-0 hover:bg-bg transition-colors"
+                >
+                  <td className="px-4 py-[13px]">
+                    <Link
+                      to={`/manager/projects/${p.id}`}
+                      className="font-sans text-[13px] font-medium text-amber hover:underline underline-offset-2"
+                    >
+                      {p.project_name}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-[13px] font-sans text-[13px] text-ink2">{p.client_name}</td>
+                  <td className="px-4 py-[13px]">
+                    <span className={`inline-block px-2 py-[3px] rounded font-sans text-[11px] font-semibold ${STATUS_BADGE[p.status]}`}>
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-[13px] font-mono text-[13px] text-ink">
+                    {p.budget_hours ?? <span className="text-ink3">—</span>}
+                  </td>
+                  <td className="px-4 py-[13px] font-mono text-[13px] text-ink">{p.actual_hours}</td>
+                  <td className="px-4 py-[13px] font-sans text-[13px] text-ink2">
+                    {p.deadline ?? <span className="text-ink3">—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </AppShell>
   );
-};
-
-export default ProjectList;
+}

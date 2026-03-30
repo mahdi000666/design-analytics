@@ -1,35 +1,33 @@
-import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import AppShell from '../../components/AppShell';
 
-const DesignerDashboard = () => {
-  const { user, logout } = useAuth();
+export default function DesignerDashboard() {
+  const { user } = useAuth();
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Designer Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Welcome back, {user?.full_name}</p>
-        </div>
-        <button
-          onClick={logout}
-          className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-        >
-          Log out
-        </button>
+    <AppShell title="Dashboard">
+      {/* Welcome */}
+      <div className="mb-7">
+        <h3 className="font-serif text-[17px] font-normal text-ink">
+          Welcome back, {user?.full_name}
+        </h3>
+        <p className="font-sans text-[13px] text-ink3 mt-1">
+          Here are your active workspaces.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Navigation card */}
+      <div className="grid grid-cols-2 gap-4">
         <Link
           to="/designer/projects"
-          className="block border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
+          className="bg-surface border border-border rounded-lg p-6 hover:border-amber/60 hover:shadow-sm transition-all group"
         >
-          <h2 className="font-medium text-gray-900">My Projects</h2>
-          <p className="text-sm text-gray-500 mt-1">View your assigned projects</p>
+          <div className="font-sans text-[14px] text-ink3 mb-2 group-hover:text-amber transition-colors">▣</div>
+          <div className="font-serif text-[17px] font-normal text-ink">My Projects</div>
+          <p className="font-sans text-[13px] text-ink3 mt-1">View your assigned projects and log time</p>
         </Link>
       </div>
-    </div>
+    </AppShell>
   );
-};
-
-export default DesignerDashboard;
+}

@@ -2,7 +2,7 @@ Email screenshot change.
 
 1.Carefully analyse the report.
 2.Extract each and every content you deem as redundant, unnecessary, bloated or can potentially be made concise.
-3.Verify if the use of raw technical identifiers such as `POST /api/files/`, `file_type=deliverable`, `on_delete=PROTECT` or anything similar is allowed in professional reports or if it requires to be described in plain language.
+3.Identify any usage of Technical Identifiers in Prose and suggest it's plain language alternative.
 
 Generate the necessary changes and modifications in an Artifact.
 Ignore TOC and Caption issues.
@@ -19,6 +19,7 @@ Tables must have full grid borders, dark blue header rows (#1F3864) with white b
 Table rows must follow the following pattern: first row (#000000), second row (#F2F7FB) then repeat.
 Keep spacing clean, avoid cramped layouts, and preserve the report’s formal academic look.
 Preserve the textual use case table structure.
+Keep it concise and avoid technical identifiers in prose.
 Ignore TOC and Caption issues.
 
 ```
