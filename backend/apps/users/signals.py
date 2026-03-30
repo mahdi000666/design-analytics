@@ -36,11 +36,11 @@ def on_user_created(sender, instance, created, **kwargs):
 
     # Send the email
     send_mail(
-        subject='You have been invited to Design Analytics',
+        subject='You have been invited to DesignOps',
         message=f"""
 Hi {instance.full_name},
 
-You have been added to the Design Analytics platform as a {instance.role}.
+You have been added to the DesignOps platform as a {instance.role}.
 
 Click the link below to set your password and activate your account:
 {activation_link}

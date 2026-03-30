@@ -1,4 +1,4 @@
-# Design Project Profitability Analytics System
+# DesignOps: Design Project Profitability Analytics System
 
 Final year project — a web-based project management and Business Intelligence system
 for graphic design agencies, built with Django + React/TypeScript.

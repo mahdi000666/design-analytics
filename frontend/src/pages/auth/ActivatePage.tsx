@@ -55,7 +55,7 @@ export default function ActivatePage() {
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Set your password</h1>
-          <p className="mt-1 text-sm text-gray-500">Activate your Design Analytics account.</p>
+          <p className="mt-1 text-sm text-gray-500">Activate your DesignOps account.</p>
         </div>
 
         {error && (

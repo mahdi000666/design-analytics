@@ -43,7 +43,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Design Analytics</h1>
+          <h1 className="text-xl font-semibold text-gray-900">DesignOps</h1>
           <p className="mt-1 text-sm text-gray-500">Sign in to your account.</p>
         </div>
 
