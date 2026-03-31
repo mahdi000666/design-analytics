@@ -1,18 +1,15 @@
 Email screenshot change.
 TABLE Captions above.
+Figure insert -> cross refernce
 
-1.As for the Abstract part, I might possibly make the system multi tenant. Forumlate that sentence for both Abstract and Resume.
-2.As for WG-04, provide the recommended fix for each.
-3.What if I add a new figure in between the others and microsoft word updates the figure numbers, do I have to manually re-edit the figure numbers in prose?
-4.Should Functional Req, Non Functional Req, Product Backlog, Sprint Plan and Use Case UML Diagram be linked and consistent with each other? Verify and correct any mistakes.
+1.Carefully analyse the report.
+2.Extract each and every content you deem as redundant, unnecessary, bloated or can potentially be made concise.
+3.Identify any usage of Technical Identifiers in Prose and suggest it's plain language alternative.
+4.Verify if the Product backlog, Sprint Planning and Context markdown files are consistent with each other. In case no, pick the most realistic one and correct the other.
 
-Do you think the Implementation section of each sprint chapter is bloated or redundant as a whole?
-
-What should section 3.4 look like after the merge?
-
-As for Ch2 §1, an Introduction is required, so you may just condense it.
-
-As for R-05, provide the recommended fix for each chapter conclusion.
+Generate a markdown document containing every problem and it's fix next to it (to be copy-pasted).
+Note: Ignore TOC and Caption issues.
+Note: AI- prefixes are added post sprint plan, as per my supervisor's request.
 
 In order to save tokens, you may only generate the document for S3 chapter, instead of rewriting the entire report.
 
