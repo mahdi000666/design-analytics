@@ -1,9 +1,16 @@
 Email screenshot change and global use case, GANTT
 TABLE Captions above.
-Reverify bloat and tech, missing/incomplete. AI-ish. Humanify
 
+1. Carefully analyse the report.
+2. Extract:
+ 2.1 Each and every content you deem as redundant, unnecessary, bloated or can potentially be made concise.
+ 2.2 Each and every content you deem as AI-ish/AI generated/Can be humanized.
+3. Identify any usage of Technical Identifiers in Prose.
 
-FR, NFR, Product backlog, Sprint Planning tables and global use case
+Generate a markdown file containing all of your findings and the fix next to it. The fix must be in the form of copy paste content, not a task for me.
+
+Between FR, NFR, Product backlog, Sprint Planning and Global Use Case UML Diagram, which is built first and which decides which?
+Verify if they are consistent with each other and correct any mistakes if found.
 
 1.Monopage in abstr
 
