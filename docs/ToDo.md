@@ -1,15 +1,18 @@
-Email screenshot change.
+Email screenshot change and global use case, GANTT
 TABLE Captions above.
-Figure insert -> cross refernce
+Reverify bloat and tech, missing/incomplete. AI-ish. Humanify
 
-1.Carefully analyse the report.
-2.Extract each and every content you deem as redundant, unnecessary, bloated or can potentially be made concise.
-3.Identify any usage of Technical Identifiers in Prose and suggest it's plain language alternative.
-4.Verify if the Product backlog, Sprint Planning and Context markdown files are consistent with each other. In case no, pick the most realistic one and correct the other.
 
-Generate a markdown document containing every problem and it's fix next to it (to be copy-pasted).
-Note: Ignore TOC and Caption issues.
-Note: AI- prefixes are added post sprint plan, as per my supervisor's request.
+FR, NFR, Product backlog, Sprint Planning tables and global use case
+
+1.Monopage in abstr
+
+2.In the middle of writing my report in microsoft word, I noticed that the guide requires table captions to be put on top of the table (i was putting them below). It would be very tedious to manually change each one since i have +50 tables. Is there a way to automate this?
+
+3.I noticed the page number suddently resets in some areas, for example the pages are 16, 17, 18 then reset back to 1. Is this normal? Is there a fix?
+
+4.When I open the microsoft document in my phone, for some reason every chapter title has a heading before it that says "Chapter 1"
+for example "Chapter 1 Chapter 5 - Title" This doesn't show on PC, but it does on phone.
 
 In order to save tokens, you may only generate the document for S3 chapter, instead of rewriting the entire report.
 
