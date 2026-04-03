@@ -74,7 +74,7 @@ DesignOps/
 | View assigned projects | ✅ | ✅ | ❌ |
 | Log time / update task status | ✅ | ✅ | ❌ |
 | Upload deliverables | ✅ | ✅ | ❌ |
-| View & resolve client feedback | ✅ | ✅ | ❌ |
+| View client feedback | ✅ | ✅ | ❌ |
 | View own projects | ✅ | ❌ | ✅ |
 | Submit feedback / revisions | ✅ | ❌ | ✅ |
 | Upload reference materials | ✅ | ❌ | ✅ |
@@ -285,14 +285,14 @@ context-aware prose that adapts to the specific combination of metric values.
 
 ## Sprint Plan
 
-6 × 2-week sprints. Estimation in person-days; total: 85.
+6 × 2-week sprints. Estimation in person-days; total: 86.
 
 | Sprint | Weeks | Goal | Days |
 |--------|-------|------|------|
 | **S1** | 1–2 | Foundation & Auth: scaffold Django + React, all models migrated, JWT login, invitation flow, user management | 16 |
 | S2 | 3–4 | Project & Task Management: project/task CRUD, designer assignment, role-scoped views + **AI Task Estimator** | 19 |
 | S3 | 5–6 | Time Tracking & Deliverables: time logging, task status, file uploads, view client feedback | 13 |
-| S4 | 7–8 | Client Portal & Feedback: client portal, feedback submission & replies, resolution, messaging | 19 |
+| S4 | 7–8 | Client Portal & Feedback: client portal, feedback submission & replies, resolution, messaging | 20 |
 | S5 | 9–10 | BI Dashboards: KPI cards, budget vs actual, EHR, client profitability, scope creep + **AI Health Narrative** | 8 |
 | S6 | 11–12 | Reports, Export & Deployment: report generation, PDF/Excel export, tests, Render deploy, README | 10 |
 
