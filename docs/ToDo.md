@@ -1,16 +1,4 @@
-Email screenshot change and global use case, GANTT
-TABLE Captions above.
-
-1. Carefully analyse the report.
-2. Extract:
- 2.1 Each and every content you deem as redundant, unnecessary, bloated or can potentially be made concise.
- 2.2 Each and every content you deem as AI-ish/AI generated/Can be humanized.
-3. Identify any usage of Technical Identifiers in Prose.
-
-Generate a markdown file containing all of your findings and the fix next to it. The fix must be in the form of copy paste content, not a task for me.
-
-Between FR, NFR, Product backlog, Sprint Planning and Global Use Case UML Diagram, which is built first and which decides which?
-Verify if they are consistent with each other and correct any mistakes if found.
+Email screenshot change, GANTT
 
 In order to save tokens, you may only generate the document for S3 chapter, instead of rewriting the entire report.
 
@@ -20,7 +8,7 @@ A4 portrait, Times New Roman body text at 12 pt, justified, 1.5 line spacing, wi
 Main chapter titles must be centered, bold, 16 pt, dark navy blue (#1F3864).
 Section headings are left-aligned, bold, 14 pt, medium blue (#2E5496).
 Subsections are left-aligned, bold, 12 pt, same blue as sections. Sub-subsections are the same except 11 pt.
-Captions for figures and tables are centered, italic, 9 pt, dark navy (#0E2841), written as “Figure X: …” or “Table X: …”.
+Captions for figures and tables are centered, italic, 9 pt, dark navy (#0E2841), written as “Figure X: …” (Figure captions are under) or “Table X: …” (Table captions are above).
 Tables must have full grid borders, dark blue header rows (#1F3864) with white bold centered text, 10 pt for column, row and body text.
 Table rows must follow the following pattern: first row (#000000), second row (#F2F7FB) then repeat.
 ```
