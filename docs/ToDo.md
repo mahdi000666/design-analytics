@@ -2,7 +2,7 @@ Email screenshot change, GANTT
 
 In order to save tokens, you may only generate the document for S3 chapter, instead of rewriting the entire report.
 
-1. Use the exact style of this report:
+1. Use this exact style:
 ```
 A4 portrait, Times New Roman body text at 12 pt, justified, 1.5 line spacing, with about 6 pt paragraph spacing before and after.
 Main chapter titles must be centered, bold, 16 pt, dark navy blue (#1F3864).
@@ -12,10 +12,9 @@ Captions for figures and tables are centered, italic, 9 pt, dark navy (#0E2841),
 Tables must have full grid borders, dark blue header rows (#1F3864) with white bold centered text, 10 pt for column, row and body text.
 Table rows must follow the following pattern: first row (#000000), second row (#F2F7FB) then repeat.
 ```
-
 2. Preserve the textual use case table structure.
 3. Keep spacing clean, avoid cramped layouts, and preserve the report’s formal academic look.
-4. Keep it concise, avoid bloat and repetitions.
+4. Keep it concise, avoid bloat, filler and repetitions.
 5. Avoid AI-ish language and technical identifiers in prose.
 
 ```
